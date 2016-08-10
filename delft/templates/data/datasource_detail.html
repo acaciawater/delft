@@ -1,0 +1,33 @@
+{% extends 'bootbase.html' %}
+{% block title %}Bestand {{object.name}}{% endblock title %}
+{% block navbar %}{% endblock %}
+{% block admin_url %}datasource/{{object.id}}{% endblock %}
+{% block content %}
+<div class = "container">
+<div class = "row-fluid">
+<h4>Gegevensbron {{object.name}} </h4>
+</div>
+<div class="row-fluid">
+<table class="table table-striped">
+<tr><td>bron</td><td>{%if object.url %}<a href='{{object.url}}'>{{object.url}}</a>{% else %}Handmatige upload{% endif %}</td></tr>
+<tr><td>generator</td><td>{{object.generator}}</td></tr>
+<tr><td>aangemaakt op</td><td>{{object.created}}</td></tr>
+<tr><td>laatste update</td><td>{{object.last_download}}</td></tr>
+<tr><td>parameters</td><td>{{object.parametercount}}</td></tr>
+</table>
+<a href="{% url 'acacia:datasource-zip' object.id %}" class="btn btn-primary active" data-toggle="tooltip" title="Alle bestanden downloaden" id="download">Downloaden</a>
+<a href="{% url 'acacia:datasource-csv' object.id %}" class="btn btn-primary active" data-toggle="tooltip" title="Gegevens downloaden als csv" id="downloadcsv">CSV Download</a>
+<a href="{% url 'acacia:datasource-update' object.id %}?next={{request.path}}" class="btn btn-primary active" data-toggle="tooltip" title="Bijwerken" id="update">Nu bijwerken</a>
+<table class="table">
+<tbody>
+<tr>
+{% for p in object.parameter_set.all %}
+<td>{{p.name}}&nbsp;{{p.description}}</br><img width="600" height="200" src='{{MEDIA_URL}}{{p.thumbnail}}'/></td>
+{% if forloop.counter|divisibleby:2 %}
+</tr><tr>
+{% endif %}
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
