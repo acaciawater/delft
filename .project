@@ -3,7 +3,7 @@
 	<name>delft</name>
 	<comment></comment>
 	<projects>
-		<project>acacia</project>
+		<project>acaciadata</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -20,7 +20,7 @@
 		<link>
 			<name>delft</name>
 			<type>2</type>
-			<location>/home/theo/acaciadata.com/delft</location>
+			<location>/home/theo/texelmeet/delft/delft</location>
 		</link>
 	</linkedResources>
 </projectDescription>
