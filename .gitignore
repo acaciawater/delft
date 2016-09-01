@@ -10,6 +10,9 @@ __pycache__/
 /media/*
 /logs/*
 
+# Secrets
+secrets.py
+
 # Distribution / packaging
 .Python
 env/
@@ -92,5 +95,3 @@ ENV/
 # Rope project settings
 .ropeproject
 
-/logs/
-/media/
