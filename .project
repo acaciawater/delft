@@ -13,7 +13,14 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.python.pydev.django.djangoNature</nature>
 		<nature>org.python.pydev.pythonNature</nature>
+		<nature>org.python.pydev.django.djangoNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>delft</name>
+			<type>2</type>
+			<location>/home/theo/acaciadata.com/delft</location>
+		</link>
+	</linkedResources>
 </projectDescription>

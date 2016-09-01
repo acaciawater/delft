@@ -8,7 +8,7 @@ __pycache__/
 
 # Folders
 /media/*
-
+/logs/*
 
 # Distribution / packaging
 .Python
@@ -91,3 +91,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+/logs/
+/media/

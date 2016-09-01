@@ -11,13 +11,12 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-os.sys.path.append('/home/stephane/git/acaciadata')
+os.sys.path.append('/home/theo/texelmeet/acaciadata')
+
+SITE_ID = 1
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '^g=tijw3+25n&a1x8grz7v83k!%*kc^*jbh#pk(*c387a^j@pz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,8 +29,10 @@ ALLOWED_HOSTS = ['.acaciadata.com', 'localhost']
 
 INSTALLED_APPS = (
     'grappelli',
+    'polymorphic',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -39,8 +40,9 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'bootstrap3',
     'registration',
-    'acacia.meetnet',
+    'acacia',
     'acacia.data',
+    'acacia.meetnet',
     'acacia.data.knmi',
     'delft',
 )
@@ -50,39 +52,33 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 )
 
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.request',
-    'django.core.context_processors.media',
-)
 
 ROOT_URLCONF = 'delft.urls'
 
 WSGI_APPLICATION = 'delft.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.mysql',
-        'NAME': 'delft',                      # Or path to database file if using sqlite3.
-        'USER': 'acacia',                      # Not used with sqlite3.
-        'PASSWORD': 'Beaumont1',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -96,7 +92,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
@@ -186,3 +181,5 @@ LOGGING = {
         },
     },
 }
+
+from secrets import *
