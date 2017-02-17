@@ -70,12 +70,12 @@ def save(request,f):
     mon.user = request.user
 
     #find  datasource by logger serial number
-    mon.datasource = LoggerDatasource.objects.get(logger__serial__iexact = mon.serial_number)
+    mon.source = LoggerDatasource.objects.get(logger__serial__iexact = mon.serial_number)
 
     try:
-        sf = mon.datasource.sourcefiles.get(name=f.name)
+        sf = mon.source.sourcefiles.get(name=f.name)
     except:
-        sf = SourceFile(name=f.name,datasource=mon.datasource,user=request.user)
+        sf = SourceFile(name=f.name,datasource=mon.source,user=request.user)
 
     f.seek(0)
     contents = f.read()

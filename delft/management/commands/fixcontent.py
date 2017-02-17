@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for model in [Formula, ManualSeries]:
             ct = ContentType.objects.get_for_model(model)
-            for f in ManualSeries.objects.all():
+            for f in model.objects.all():
                 if hasattr(f,'series_ptr_id'): # can use issublasss() here?
                     s = Series.objects.get(pk=f.series_ptr_id)
                 else:

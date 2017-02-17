@@ -38,7 +38,7 @@ class Command(BaseCommand):
                             depth = float(depth)
                         else:
                             depth = 0
-                        date = datetime.datetime.strptime(datumtijd,'%d-%m-%Y %H:%M')
+                        date = datetime.datetime.strptime(datumtijd,'%d/%m/%Y %H:%M')
                         date = date.replace(tzinfo=CET)
                         date = date.date()
                         found = False
