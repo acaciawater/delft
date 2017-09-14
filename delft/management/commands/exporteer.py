@@ -11,6 +11,8 @@ class Command(BaseCommand):
     fldr = './export'
 
     def handle(self, *args, **options):
+        if not os.path.exists(self.fldr):
+            os.makedirs(self.fldr)
         for s in Series.objects.all():
             if s.parameter:
                 name = unicode(s.parameter)

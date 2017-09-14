@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'acacia',
     'acacia.data',
+    'acacia.ahn',
     'acacia.meetnet',
     'acacia.data.knmi',
     'delft',
