@@ -51,7 +51,7 @@ class Command(BaseCommand):
                         date = CET.localize(date)
                         date = date.astimezone(WinterTijd)
                         series_name = 'WarecoHandpeiling_{}'.format(unicode(screen))
-                        series,created = mloc.series_set.get_or_create(name=series_name,defaults={'description':'Handpeiling Wareco', 'unit':'m NAP', 'type':'scatter', 'user':user})
+                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling Wareco', 'unit':'m NAP', 'type':'scatter', 'user':user})
                         pt, created = series.datapoints.update_or_create(date=date,defaults={'value': depth})
                         print screen, pt.date, pt.value
                     except Well.DoesNotExist:
