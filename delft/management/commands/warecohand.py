@@ -11,7 +11,6 @@ from acacia.meetnet.models import Well,Screen
 from django.db.models import Q
 from django.contrib.auth.models import User
 import pytz
-from tz import NL as WinterTijd
 
 class Command(BaseCommand):
     args = ''
@@ -49,9 +48,8 @@ class Command(BaseCommand):
                             depth = 0
                         date = datetime.datetime.strptime(datumtijd,'%m/%d/%Y %H:%M')
                         date = CET.localize(date)
-                        date = date.astimezone(WinterTijd)
                         series_name = 'WarecoHandpeiling_{}'.format(unicode(screen))
-                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling Wareco', 'unit':'m NAP', 'type':'scatter', 'user':user})
+                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling Wareco', 'timezone':'CET', 'unit':'m NAP', 'type':'scatter', 'user':user})
                         pt, created = series.datapoints.update_or_create(date=date,defaults={'value': depth})
                         print screen, pt.date, pt.value
                     except Well.DoesNotExist:
