@@ -26,16 +26,15 @@ class Command(BaseCommand):
                 start = max(warecostart,pzhstart)
                 stop = min(warecostop,pzhstop)
                 if start < stop:
-                    # align both series
-                    wareco, pzh = wareco.align(pzh)
-                    pzh = pzh[start:stop].interpolate(method='time')
-                    wareco = wareco[start:stop].interpolate(method='time')
+                    # resample both series 
+                    pzh = pzh[start:stop].resample('H').mean()
+                    wareco = wareco[start:stop].resample('H').mean()
                     verschil = wareco - pzh
                     name = unicode(loc.name)
                     df = pd.DataFrame({'filter': name, 'pzh': pzh, 'wareco': wareco, 'verschil_cm': verschil*100})
                     df['abs_verschil_cm'] = abs(df['verschil_cm'])
+                    df.to_csv('verschil_{}.csv'.format(slugify(name)))
                     df.dropna(inplace=True)
                     stats = df.describe()
                     print stats
-                    df.to_csv('verschil_{}.csv'.format(slugify(name)))
                 
