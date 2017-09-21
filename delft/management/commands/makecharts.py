@@ -27,7 +27,11 @@ class Command(BaseCommand):
         stop=datetime(2017,9,15,tzinfo=tz)
         if not os.path.exists(folder):
             os.makedirs(folder)
-        for w in Well.objects.all():
+        
+        wells = ['B37E0275','B37E0312','B37E3473','B37E3502','B37E3507']
+        screens = ['B37E0275/001','B37E0312/004','B37E3473/004','B37E3502/001','B37E3507/001']
+
+        for w in Well.objects.filter(name__in=wells):
             data = chart_for_well(w,start,stop)
             filename = os.path.join(folder,w.nitg + '.png')
             print filename
@@ -35,9 +39,11 @@ class Command(BaseCommand):
                 png.write(data)
 
             for s in w.screen_set.all():
-                data = chart_for_screen(s)
-                filename = os.path.join(folder,slugify(unicode(s)) + '.png')
-                print filename
-                with open(filename,'wb') as png:
-                    png.write(data)
+                name = unicode(s)
+                if name in screens:
+                    data = chart_for_screen(s,start,stop)
+                    filename = os.path.join(folder,slugify(name) + '.png')
+                    print filename
+                    with open(filename,'wb') as png:
+                        png.write(data)
             
