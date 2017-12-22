@@ -139,6 +139,10 @@ LOGGING = {
             'backupCount': 0,
             'formatter': 'default'
         },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
         'update': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
@@ -185,7 +189,7 @@ LOGGING = {
             'propagate': True,
         },
         'delft': {
-            'handlers': ['file',],
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         },
