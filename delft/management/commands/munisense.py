@@ -12,6 +12,9 @@ from django.contrib.gis.geos.point import Point
 
 import logging
 from acacia.meetnet.util import register_well, register_screen
+from acacia.data.models import Generator
+from django.contrib.auth.models import User
+from django.conf import settings
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
@@ -35,14 +38,20 @@ class Command(BaseCommand):
                 default = 'munisense.json',
                 help = 'import from file')
 
-    def process(self, network, wells):
+    def process(self, network, wells, user):
         n = 0
+        try:
+            gen = Generator.objects.get(name='Munisense')
+        except Generator.DoesNotExist:
+            logger.error('Munisense generator not found')
+            gen = None
+            
         for key,value in wells.items():
             n += 1
 
             def as_array(key):
                 try:
-                    return [(int(t),float(x)) for t,x in value[key].items()]
+                    return [(t,x) for t,x in value[key].items()]
                 except:
                     return None
 
@@ -96,6 +105,31 @@ class Command(BaseCommand):
             if created:
                 logger.info('Screen {} created'.format(screen))
                 register_screen(screen)
+                
+            if gen:
+                # we have a generator, create a datasource
+                if value['schlumberger_diver_available']:
+                    try:
+                        serial = as_array('schlumberger_diver_serial')
+                        serial = serial[-1][1]
+                    except:
+                        serial = value['schlumberger_diver_serial']
+                    if not serial or serial == '-':
+                        serial = 'diver'+str(object_id)
+                else:
+                    serial = 'logger'+str(object_id)
+                # TODO: create loggerpos and loggerdata 
+                ds, created = screen.mloc.datasource_set.update_or_create(name=serial,defaults = {
+                    'description': 'Groundwater levels from munisense database',
+                    'generator': gen,
+                    'user': user,
+                    'username': settings.MUNISENSE_USERNAME,
+                    'password': settings.MUNISENSE_PASSWORD,
+                    'url': settings.MUNISENSE_API,
+                    'config': '{"object_id": "%s"}' % object_id
+                    })
+                if created:
+                    logger.info('Datasource {} created'.format(ds.name))
         return n
         
     def handle(self, *args, **options):
@@ -103,6 +137,7 @@ class Command(BaseCommand):
         down = options['down']
         filename = options['fname']
         network = Network.objects.first()
+        user = User.objects.get(username='theo')
         numwells = 0
         if down:
             m = Munisense()
@@ -123,14 +158,14 @@ class Command(BaseCommand):
                     chunk += 1
                     if importing:
                         wells = response.json()
-                        numwells += self.process(network,wells)
+                        numwells += self.process(network,wells,user)
                 if chunk:
                     f.write('}\n')
         else:
             import io
             with io.open(filename) as fp:
                 wells = json.load(fp)
-                numwells += self.process(network,wells)
+                numwells += self.process(network,wells,user)
         
         print numwells, 'wells processed'
         
