@@ -68,8 +68,8 @@ var redBullet = L.icon({
 var theMap = null;
 var markers = []; // Should be associative array: {} ??
 
-function addMarkers(map,zoom) {
-	$.getJSON('/locs', function(data) {
+function addMarkers(map,query,zoom) {
+	$.getJSON('/locs?'+query, function(data) {
 		bounds = new L.LatLngBounds();
 		$.each(data, function(key,val) {
 			marker = L.marker([val.lat, val.lon],{title:val.name, icon: redBullet});
@@ -222,7 +222,7 @@ function toggleLabels() {
  * @options initial centerpoint and zoomlevel
  * @returns the map
  */
-function initMap(div,options) {
+function initMap(div,options,query) {
 	var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
  		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -265,11 +265,11 @@ function initMap(div,options) {
 	
 	if(restoreBounds(map)) {
 		// add markers, but don't change extent
-		addMarkers(map,false);
+		addMarkers(map,query,false);
 	}
 	else {
 		// add markers and zoom to extent
-		addMarkers(map,true);
+		addMarkers(map,query,true);
 	}
 
 	var control = L.control.labelcontrol({ position: 'topleft' }).addTo(map);

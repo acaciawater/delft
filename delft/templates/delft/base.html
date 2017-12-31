@@ -46,6 +46,9 @@
 		.navbar-brand {
 			font-size: medium;
 		}
+		.blue {
+		  	color: #337ab7;
+		}
     </style>
 	{% endblock %}
   </head>
@@ -70,11 +73,11 @@
 	      {% endblock navbar %}
 	      {% block navbar-auth %}
 	      <ul class="nav navbar-nav navbar-right">
-	        {% block navbar-right %}{% endblock navbar-right %}
+	        {% block navbar-right %}
+	        {% endblock navbar-right %}
 	        {% if user.is_authenticated %}
 		        <li class="dropdown">
-		          <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans "Admin" %}
-		          <b class="caret"></b></a>
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-lg fa-cog blue" aria-hidden="true"></i></a>
 		          <ul class="dropdown-menu">
 		        {% if user.is_staff %}
 		            <li><a href="{% block admin_url %}/admin/meetnet{% endblock admin_url %}">{% trans "Admin page" %}</a></li>
@@ -85,8 +88,7 @@
 		          </ul>
 		        </li>
 		        <li class="dropdown">
-		          <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}
-		          <b class="caret"></b></a>
+		          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-lg fa-user-circle blue" aria-hidden="true"></i></a>
 		          <ul class="dropdown-menu">
 		            <li><a href="{% url 'auth_logout' %}">{% trans "Log out" %}</a></li>
 		            <li><a href="{% url 'auth_password_change' %}">{% trans "Change password" %}</a></li>

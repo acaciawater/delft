@@ -1,4 +1,5 @@
 {% extends 'delft/base.html' %}
+{% load static %}
 {% load i18n %}
 {% block title %}{% trans "Monitoring network" %} {{object}} {% endblock %}
 {% block style %}
@@ -7,6 +8,7 @@
 <link rel="stylesheet" href="//unpkg.com/leaflet.markercluster@1.0.5/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="//unpkg.com/leaflet.markercluster@1.0.5/dist/MarkerCluster.Default.css"/>
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="/static/css/search.css"/>
 <link rel="stylesheet" href="/static/css/delftmap.css"/>
 <link rel="stylesheet" href="/static/css/leaflet.wmslegend.css"/>
 {% endblock %}
@@ -24,13 +26,120 @@
 <script>
 
 $(function() {
-	initMap('map',{{options|safe}});
+	var query = "{{request.GET.urlencode}}";
+	initMap('map',{{options|safe}},query);
  	$("#list").height($("#map").height());
  	$("#list").sortable();
+
+ 	{% if search %}
+	$('#search').value ='{{search}}';
+	{% endif %}
 });
+
+function removeParam(parameter)
+{
+	var url=document.location.href;
+	var urlparts= url.split('?');
+
+	if (urlparts.length>=2)
+	{
+		var urlBase=urlparts.shift(); 
+		var queryString=urlparts.join("?"); 
+		
+		var prefix = encodeURIComponent(parameter)+'=';
+		var pars = queryString.split(/[&;]/g);
+		for (var i= pars.length; i-->0;)               
+		    if (pars[i].lastIndexOf(prefix, 0)!==-1)   
+		        pars.splice(i, 1);
+		url = urlBase+'?'+pars.join('&');
+		window.history.pushState('',document.title,url); 
+	 }
+	 return url;
+}
+
+function insertParam(key, value)
+{
+    key = encodeURI(key); 
+    value = encodeURI(value);
+
+    var search = document.location.search;
+	if (search.length == 0)
+		return [key,value].join('=');
+    
+	var kvp = search.substr(1).split('&');
+    var i=kvp.length; 
+    while(i--) 
+    {
+        var x = kvp[i].split('=');
+
+        if (x[0]==key)
+        {
+            x[1] = value;
+            kvp[i] = x.join('=');
+            break;
+        }
+    }
+
+    if(i<0) {
+    	kvp[kvp.length] = [key,value].join('=');
+    }
+
+    return kvp.join('&'); 
+}
+
+function removeSearch() {
+	var url = removeParam("search");
+	$("#searchbox").hide();
+	window.location.href = url;
+}
+
+function removeAquifer() {
+	var url = removeParam("aquifer");
+	window.location.href = url;
+}
+
+function filterAquifer(aq) {
+	var parts = window.location.href.split('?');
+	var url = parts[0] + '?' + insertParam('aquifer',aq);
+	window.location.href = url;
+	return false;
+}
 
 </script>
 {% endblock %}
+
+{% block navbar-right %}
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" 
+    	data-toggle="dropdown" 
+    	href="#" 
+    	role="button" 
+    	aria-haspopup="true" 
+    	aria-expanded="false">
+    	{% if aquifer %}Aquifer {{aquifer}} {% else %} Aquifer {% endif %}
+		<b class="caret"></b>
+	</a>
+    <ul class="dropdown-menu">
+      {% for aq in aquifers %}
+      <li><a class="dropdown-item" href="" onclick='return filterAquifer("{{aq}}");'>{{aq}}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+  <li id="searchbox" class="nav-item">
+	<form class="navbar-form navbar-right" role="search">
+	<div class="input-group input-group-sm">
+ 		{% if search %}
+ 		<span id="removesearch" class="input-group-addon" onclick="removeSearch()" title="Zoekterm verwijderen"><i class="glyphicon glyphicon-remove" style="color:#d9534f"></i></span>
+ 		{% else %}
+ 		<span id="dosearch" class="input-group-addon"><i class="glyphicon glyphicon-search" style="color:#428bca"></i></span>
+ 		{% endif %}
+		<input type="text" class="form-control" placeholder="{{search|default:"Zoeken..."}}" name="search" id="search">
+	</div>
+	</form>
+</li>
+{{ block.super }}
+{% endblock %}
+
 {% block content %}
 <div class="full adjust container-fluid">
 	<div class="full row row-fluid">
@@ -39,11 +148,11 @@ $(function() {
 		<div id="list" class="list-group scroll col-sm-2">
 			<a class="list-group-item active" href="#">
 				{%trans "Wells"%}
-				<span id="badge" title='{% trans "Number of wells" %}' class="badge">{{network.well_set.count}}</span>
+				<span id="badge" title='{% trans "Number of wells" %}' class="badge">{{wells.count}}</span>
 			</a>
-			{% for well in network.well_set.all|dictsort:"name" %}
+			{% for well in wells|dictsort:"name" %}
 			<a class="list-group-item" href="{% url 'meetnet:well-detail' well.id %}" onmouseover="showMarker({{well.id}});" onmouseout="hideMarker({{well.id}});">
-				<span><img class="bullet" src='/static/bullet_ball_blue.png'></img>{{well.name}}</span>
+				<span><img class="bullet" src="{% static 'bullet_ball_blue.png' %}"></img>{{well.name}}</span>
 				{% if well.straat %}
 					<br/>
 					<div class='text-muted'>
