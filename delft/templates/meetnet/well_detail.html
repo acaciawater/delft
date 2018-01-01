@@ -1,4 +1,4 @@
-{% extends 'bootbase.html' %}
+{% extends 'base.html' %}
 {% load i18n %} 
 {% block title %}Waarnemingsput {{object.name}} {% endblock title %} 
 {% block breadcrumbs %}
@@ -8,10 +8,10 @@
 {% endblock breadcrumbs %} 
 {% block brandname %}
 <div class="navbar-brand">
-	<a href="{{object.homepage}}"><img
-		src="/media/{{object.network.logo}}" /></a>
+	<a href="{{object.network.homepage}}"><img src="/media/{{object.network.logo}}"/></a>
+	{% trans "Monitoring network" %} {{object.network.name}}
 </div>
-{% endblock %} 
+{% endblock %}
 {% block extrastyle %}
 <style>
 html, body {
@@ -171,7 +171,7 @@ a img {
 										</tr>
 									{% endfor %}
 								{% endif %}
-							{% if s.loggerpos_set.count > 1 %}
+							{% if s.loggerpos_set.count != 1 %}
 							<tr>
 								<td>{{s.nr}}</td>
 								<td>{{s.top|floatformat:2|default:'onbekend'}}</td>

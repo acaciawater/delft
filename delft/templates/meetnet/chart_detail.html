@@ -1,15 +1,16 @@
 {% extends 'highchart.html' %}
 {% load i18n %}
-{% block title %}{% trans Chart %} {{object.name}}{% endblock title %}
+{% block title %}{% trans 'chart' %} {{object.name}}{% endblock title %}
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-	<li><a href="/">{% trans "Home" %}</a></li>
+	<li><a href="/">{% trans 'Home' %}</a></li>
 </ol>
 {% endblock breadcrumbs %} 
 {% block brandname %}
 <div class="navbar-brand">
 	<a href="{{object.network.homepage}}"><img
 		src="/media/{{object.network.logo}}" /></a>
+	{% trans "Monitoring network" %} {{object.network.name}}
 </div>
 {% endblock %} 
 {% block extrastyle %}
