@@ -36,7 +36,7 @@ def filter_wells(request):
             Q(name__icontains=term)|
             Q(nitg__icontains=term))
     aquifer = request.GET.get('aquifer')
-    if aquifer and aquifer != 'all':
+    if aquifer and aquifer != _('all'):
         ids = Screen.objects.filter(aquifer__iexact=aquifer).values_list('well__id')
         query = query.filter(id__in=ids)
     return query
