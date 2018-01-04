@@ -48,6 +48,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -56,7 +57,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
+
+CACHE_MIDDLEWARE_KEY_PREFIX='delft'
 
 ROOT_URLCONF = 'delft.urls'
 
@@ -107,6 +111,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 EXPORT_URL = '/export/'
 EXPORT_ROOT = os.path.join(BASE_DIR, 'export')
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
+
+#CACHE_MIDDLEWARE_KEY_PREFIX='pzh'
 
 UPLOAD_DATAFILES = 'datafiles' 
 UPLOAD_THUMBNAILS = 'thumbnails' 
