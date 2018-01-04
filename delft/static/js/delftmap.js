@@ -244,6 +244,12 @@ function initMap(div,options,query) {
 		attribution: 'Tiles &copy; Esri'
 	});
 	
+	var gemeenten = L.tileLayer.wms('https://geodata.nationaalgeoregister.nl/bestuurlijkegrenzen/ows', {
+		layers: 'gemeenten',
+		format: 'image/png',
+		opacity: 0.2
+	});
+			
 	var ahn35 = L.esri.imageMapLayer({
 		url: 'https://ahn.arcgisonline.nl/arcgis/rest/services/Hoogtebestand/AHN3_5m/ImageServer',
 		opacity: 0.5})
@@ -255,7 +261,7 @@ function initMap(div,options,query) {
 	var map = L.map(div,options);
 
  	baseMaps = {'Openstreetmap': osm, 'Google wegenkaart': roads, 'Google satelliet': satellite, 'ESRI wegenkaart': topo, 'ESRI satelliet': imagery};
-	overlayMaps = { 'Maaiveld': ahn35 };
+	overlayMaps = { 'Maaiveld': ahn35, 'Gemeenten': gemeenten };
 	L.control.layers(baseMaps, overlayMaps).addTo(map);
 	
 	if (!restoreMap(map)) {
