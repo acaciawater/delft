@@ -58,8 +58,10 @@ class HomeView(NetworkView):
         # get distinct, case insensitive, sorted list of aquifers
         #context['aquifers'] = Screen.objects.distinct('aquifer') # postgres only
         aquifers = set(map(lambda x:str(x[0]).lower(),Screen.objects.exclude(aquifer__isnull=True).values_list('aquifer')))
-        aquifers.remove('')
-
+        try:
+            aquifers.remove('')
+        except:
+            pass
         # get selected aquifer
         aquifer = self.request.GET.get('aquifer')
         if aquifer == _('all'):
