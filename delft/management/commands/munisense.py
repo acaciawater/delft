@@ -74,7 +74,8 @@ class Command(BaseCommand):
             owner = value["owner_id"]
             maaiveld = as_array('well_covering_surface_level')
             last_mv = maaiveld[-1][1] if maaiveld else None
-            well,created = network.well_set.update_or_create(name=description or object_id, defaults = {
+            name = '{} ({})'.format(description,object_id)
+            well,created = network.well_set.update_or_create(name=name, defaults = {
                 'description': u'Munisense ID={}, {}'.format(object_id or description,location),
                 'location': Point(lon,lat),
                 'nitg': dino,
