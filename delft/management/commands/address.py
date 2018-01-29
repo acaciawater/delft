@@ -40,7 +40,7 @@ class Command(BaseCommand):
             logger.info('Checking well {}'.format(well))
             if well.straat:
                 continue
-            loc = toWGS84(well.location)
+            loc = well.latlon()
             data = get_address(loc.x, loc.y)
             for address in data['results']:
                 logger.info(address.get('formatted_address','Geen adres'))
