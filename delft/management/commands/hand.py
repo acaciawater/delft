@@ -15,12 +15,12 @@ import pytz
 class Command(BaseCommand):
     args = ''
     help = 'Importeer handpeilingen'
-    option_list = BaseCommand.option_list + (
-            make_option('--file',
+    def add_arguments(self, parser):
+        parser.add_argument('-f','--file',
                 action='store',
-                type = 'string',
                 dest = 'fname',
-                default = None),
+                default = None,
+                help='CSV file met handpeilingen'
         )
         
     def handle(self, *args, **options):
@@ -55,7 +55,7 @@ class Command(BaseCommand):
                         date = CET.localize(date)
                         series_name = '%s HAND' % mloc.name
                         series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling', 'timezone':'CET', 'unit':'m NAP', 'type':'scatter', 'user':user})
-                        pt, created = series.datapoints.update_or_create(date=date,defaults={'value': depth})
+                        pt, created = series.datapoints.update_or_create(date=date,defaults={'value': nap})
                         print screen, pt.date, pt.value
                     except Well.DoesNotExist:
                         print 'Well %s not found' % NITG
