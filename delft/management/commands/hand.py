@@ -25,7 +25,7 @@ class Command(BaseCommand):
         
     def handle(self, *args, **options):
         fname = options.get('fname')
-        CET=pytz.timezone('CET')
+        CET=pytz.timezone('Etc/GMT-1')
         user=User.objects.get(username='theo')
         if fname:
             with open(fname,'r') as f:
@@ -36,16 +36,17 @@ class Command(BaseCommand):
                         well = Well.objects.get(Q(nitg=NITG) | Q(name=NITG))
                         filt = int(row['Filter'])
                         screen = well.screen_set.get(nr=filt)
-                        ploc = ProjectLocatie.objects.get(name__in=[well.nitg, well.name])
-                        name1= '%s/%03d' % (well.name, filt)
+                        ploc = ProjectLocatie.objects.get(name=well.nitg)
+                        #ploc = ProjectLocatie.objects.get(name__in=[well.nitg, well.name])
+                        #name1= '%s/%03d' % (well.name, filt)
                         name2= '%s/%03d' % (well.nitg, filt)
-                        mloc = ploc.meetlocatie_set.get(name__in=[name1,name2])
+                        mloc = ploc.meetlocatie_set.get(name=name2)
                         datumtijd = '%s %s' % (row['Datum'], row['Tijd'])
                         depth = row['Meting']
                         if depth:
                             depth = float(depth)
                         else:
-                            depth = 0
+                            continue
                         if not screen.refpnt:
                             print 'Reference point for screen %s not available' % screen
                             continue
@@ -54,7 +55,7 @@ class Command(BaseCommand):
                         date = datetime.datetime.strptime(datumtijd,'%d/%m/%Y %H:%M')
                         date = CET.localize(date)
                         series_name = '%s HAND' % mloc.name
-                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling', 'timezone':'CET', 'unit':'m NAP', 'type':'scatter', 'user':user})
+                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling', 'timezone':'Etc/GMT-1', 'unit':'m NAP', 'type':'scatter', 'user':user})
                         pt, created = series.datapoints.update_or_create(date=date,defaults={'value': nap})
                         print screen, pt.date, pt.value
                     except Well.DoesNotExist:

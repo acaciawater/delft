@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^data/', include('acacia.data.urls',namespace='acacia')),
     url(r'^net/', include('acacia.meetnet.urls',namespace='meetnet')),
+    url(r'^val/', include('acacia.validation.urls',namespace='validation')),
     url(r'^locs/',well_locations,name='locs'),
     url(r'^pop/(?P<pk>\d+)', PopupView.as_view()),
     url(r'^admin/', include(admin.site.urls)),

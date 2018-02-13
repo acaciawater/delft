@@ -33,12 +33,12 @@ class Command(BaseCommand):
                 util.recomp(screen, series, known_baros, tz)   
                              
                 #maak/update grafiek
-                chart, created = Chart.objects.get_or_create(name=unicode(screen), defaults={
+                chart, created = Chart.objects.update_or_create(name=unicode(screen), defaults={
                             'title': unicode(screen),
                             'user': user, 
                             'percount': 0, 
                             'start':datetime.datetime(2013,1,1), 
-                            'stop': datetime.datetime(2015,12,31),
+                            'stop': datetime.datetime(2017,12,31),
                             })
                 chart.series.get_or_create(series=series, defaults={'label' : 'm tov NAP'})
                 # handpeilingen toevoegen (als beschikbaar)

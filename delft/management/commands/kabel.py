@@ -18,12 +18,12 @@ class Command(BaseCommand):
                 action='store',
                 dest = 'fname',
                 default = None,
-                help='CSV file with cale lengths'
+                help='CSV file with cable lengths'
         )
         
     def handle(self, *args, **options):
         fname = options.get('fname')
-        CET=pytz.timezone('CET')
+        CET=pytz.timezone('Etc/GMT-1')
         if fname:
             with open(fname,'r') as f:
                 reader = csv.DictReader(f, delimiter=',')
