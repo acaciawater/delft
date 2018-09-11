@@ -19,9 +19,15 @@ class Command(BaseCommand):
                 dest = 'dest',
                 default = '.',
                 help = 'destination folder')
+        parser.add_argument('-s', '--skip',
+                action='store_true',
+                dest = 'skip',
+                default = False,
+                help = 'skip well charts')
                         
     def handle(self, *args, **options):
         folder = options.get('dest')
+        skip = options.get('skip')
         tz = pytz.timezone('Etc/GMT-1')
         start=datetime(2017,1,1,tzinfo=tz)
         stop=datetime(2017,12,31,tzinfo=tz)
@@ -33,16 +39,17 @@ class Command(BaseCommand):
 
         #for w in Well.objects.filter(name__in=wells):
         for w in Well.objects.all():
-            data = chart_for_well(w,start,stop)
-            filename = os.path.join(folder,w.nitg + '.png')
-            print filename
-            with open(filename,'wb') as png:
-                png.write(data)
+            if not skip:
+                data = chart_for_well(w)
+                filename = os.path.join(folder,w.nitg + '.png')
+                print filename
+                with open(filename,'wb') as png:
+                    png.write(data)
 
             for s in w.screen_set.all():
                 name = unicode(s)
                 #if name in screens:
-                data = chart_for_screen(s,start,stop)
+                data = chart_for_screen(s,start,stop,loggerpos=False)
                 filename = os.path.join(folder,slugify(name) + '.png')
                 print filename
                 with open(filename,'wb') as png:
