@@ -39,6 +39,9 @@ def filter_wells(request):
     if aquifer and aquifer != _('all'):
         ids = Screen.objects.filter(aquifer__iexact=aquifer).values_list('well__id')
         query = query.filter(id__in=ids)
+    source = request.GET.get('source')
+    if source and source != _('all'):
+        query = query.filter(owner=source)
     return query
 
 class HomeView(NetworkView):
@@ -55,24 +58,27 @@ class HomeView(NetworkView):
         context['search'] = self.request.GET.get('search')
         context['wells'] = filter_wells(self.request)
 
-        # get distinct, case insensitive, sorted list of aquifers
-        #context['aquifers'] = Screen.objects.distinct('aquifer') # postgres only
-        aquifers = set(map(lambda x:str(x[0]).lower(),Screen.objects.exclude(aquifer__isnull=True).values_list('aquifer')))
-        try:
-            aquifers.remove('')
-        except:
-            pass
-        # get selected aquifer
-        aquifer = self.request.GET.get('aquifer')
-        if aquifer == _('all'):
-            aquifer = None
-        context['aquifer'] = aquifer  
-
-        if aquifer:
-            # remove selected aquifer from the list
-            aquifers.remove(aquifer)
-
-        context['aquifers'] = [_('all')] + sorted(aquifers)
+        def filterlist(propertyname, queryset):
+            # get distinct, case insensitive, sorted list for filtering
+            filters = set(map(lambda x:str(x[0]).lower(),queryset.values_list(propertyname)))
+            try:
+                filters.remove('')
+            except:
+                pass
+            # get selected propertyname
+            selected = self.request.GET.get(propertyname)
+            if selected == _('all'):
+                selected = None
+            context[propertyname] = selected  
+    
+            if selected:
+                # remove selected property from the list
+                filters.remove(selected)
+    
+            return [_('all')] + sorted(filters)
+        
+        context['aquifers'] = filterlist('aquifer',Screen.objects.exclude(aquifer__isnull=True))
+        context['owners'] = filterlist('owner',Well.objects.exclude(owner__isnull=True))
         return context
 
     def get_object(self):

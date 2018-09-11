@@ -87,20 +87,37 @@ function insertParam(key, value)
     return kvp.join('&'); 
 }
 
-function removeSearch() {
-	var url = removeParam("search");
-	$("#searchbox").hide();
+function removeFilter(name) {
+	var url = removeParam(name);
 	window.location.href = url;
+}
+
+function removeSearch() {
+	$("#searchbox").hide();
+	removeFilter("search");
 }
 
 function removeAquifer() {
-	var url = removeParam("aquifer");
-	window.location.href = url;
+	removeFilter("aquifer");
 }
 
-function filterAquifer(aq) {
+function removeOwner() {
+	removeFilter("owner");
+}
+
+function setFilter(name, value) {
 	var parts = window.location.href.split('?');
-	var url = parts[0] + '?' + insertParam('aquifer',aq);
+	var url = parts[0] + '?' + insertParam(name,value);
+	window.location.href = url;
+	return false;
+	
+}
+function filterAquifer(aq) {
+	setFilter('aquifer',aq);
+}
+
+function filterOwner(aq) {
+	setFilter('owner',owner);
 	window.location.href = url;
 	return false;
 }
@@ -121,7 +138,23 @@ function filterAquifer(aq) {
 	</a>
     <ul class="dropdown-menu">
       {% for aq in aquifers %}
-      <li><a class="dropdown-item" href="" onclick='return filterAquifer("{{aq}}");'>{{aq}}</a></li>
+      <li><a class="dropdown-item" href="" onclick='return setFilter("aquifer","{{aq}}");'>{{aq}}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" 
+    	data-toggle="dropdown" 
+    	href="#" 
+    	role="button" 
+    	aria-haspopup="true" 
+    	aria-expanded="false">
+    	{% if owner %}Bron {{owner}} {% else %} Bron {% endif %}
+		<b class="caret"></b>
+	</a>
+    <ul class="dropdown-menu">
+      {% for ow in owners %}
+      <li><a class="dropdown-item" href="" onclick='return setFilter("owner","{{ow}}");'>{{ow}}</a></li>
       {% endfor %}
     </ul>
   </li>
