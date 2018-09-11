@@ -22,7 +22,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['.acaciadata.com', 'localhost']
 
 # for debug toolbar
-INTERNAL_IPS = '127.0.0.1'
+#INTERNAL_IPS = '127.0.0.1'
 
 # Application definition
 INSTALLED_APPS = (
@@ -43,12 +43,13 @@ INSTALLED_APPS = (
     'acacia.data',
     'acacia.ahn',
     'acacia.meetnet',
+    'acacia.validation',
     'acacia.data.knmi',
     'registration',
 )
 
 MIDDLEWARE = [
-    'django.middleware.cache.UpdateCacheMiddleware',
+#    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -57,7 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
+#    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 CACHE_MIDDLEWARE_KEY_PREFIX='delft'
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'delft.wsgi.application'
 
 LANGUAGE_CODE = 'nl-nl'
 
-TIME_ZONE = 'CET'
+TIME_ZONE = 'Europe/Amsterdam'
 
 USE_I18N = True
 
