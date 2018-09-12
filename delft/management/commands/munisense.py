@@ -129,6 +129,7 @@ class Command(BaseCommand):
                     'description': 'Groundwater levels from munisense database',
                     'generator': gen,
                     'user': user,
+                    'timezone': 'UTC',
                     'username': settings.MUNISENSE_USERNAME,
                     'password': settings.MUNISENSE_PASSWORD,
                     'url': settings.MUNISENSE_API,
