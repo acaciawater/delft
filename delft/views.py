@@ -39,16 +39,17 @@ def filter_wells(request):
     if aquifer and aquifer != _('all'):
         ids = Screen.objects.filter(aquifer__iexact=aquifer).values_list('well__id')
         query = query.filter(id__in=ids)
-    source = request.GET.get('source')
-    if source and source != _('all'):
-        query = query.filter(owner=source)
+    owner = request.GET.get('owner')
+    if owner and owner != _('all'):
+        query = query.filter(owner=owner)
     return query
 
-class HomeView(NetworkView):
+class HomeView(DetailView):
+    model = Network
     template_name = 'delft/home.html'
 
     def get_context_data(self, **kwargs):
-        context = NetworkView.get_context_data(self, **kwargs)
+        context = DetailView.get_context_data(self, **kwargs)
         options = {
             'center': [52.15478, 4.48565],
             'zoom': 12 }
