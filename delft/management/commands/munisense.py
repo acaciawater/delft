@@ -12,7 +12,7 @@ from django.contrib.gis.geos.point import Point
 
 import logging
 from acacia.meetnet.util import register_well, register_screen
-from acacia.data.models import Generator
+from acacia.data.models import Generator, Datasource
 from django.contrib.auth.models import User
 from django.conf import settings
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 help = 'import from file')
 
     def process(self, network, wells, user):
-        n = 0
+        numcreated = 0
         try:
             gen = Generator.objects.get(name='Munisense')
         except Generator.DoesNotExist:
@@ -47,7 +47,6 @@ class Command(BaseCommand):
             gen = None
             
         for key,value in wells.items():
-            n += 1
 
             def as_array(key):
                 try:
@@ -106,7 +105,7 @@ class Command(BaseCommand):
             if created:
                 logger.info('Screen {} created'.format(screen))
                 register_screen(screen)
-                
+                numcreated += 1
             if gen:
                 # we have a generator, create a datasource
                 if value['schlumberger_diver_available']:
@@ -120,7 +119,13 @@ class Command(BaseCommand):
                 else:
                     serial = 'logger'+str(object_id)
                 # TODO: create loggerpos and loggerdata 
-                ds, created = screen.mloc.datasource_set.update_or_create(name=serial,defaults = {
+                if screen.mloc is None:
+                    register_screen(screen)
+                    if screen.mloc is None:
+                        raise 'Geen meetliocatie voor filter ' + str(screen)
+                
+#                ds, created = screen.mloc.datasource_set.update_or_create(name=serial,defaults = {
+                ds, created = Datasource.objects.update_or_create(name=serial,meetlocatie=screen.mloc,defaults = {
                     'description': 'Groundwater levels from munisense database',
                     'generator': gen,
                     'user': user,
@@ -131,7 +136,7 @@ class Command(BaseCommand):
                     })
                 if created:
                     logger.info('Datasource {} created'.format(ds.name))
-        return n
+        return numcreated
         
     def handle(self, *args, **options):
         importing = options['import']
@@ -140,6 +145,7 @@ class Command(BaseCommand):
         network = Network.objects.first()
         user = User.objects.get(username='theo')
         numwells = 0
+        numcreated = 0
         if down:
             m = Munisense()
             options = {
@@ -157,9 +163,10 @@ class Command(BaseCommand):
                         f.write('{')
                     f.write(contents[1:-1])
                     chunk += 1
+                    wells = response.json()
+                    numwells += len(wells)
                     if importing:
-                        wells = response.json()
-                        numwells += self.process(network,wells,user)
+                        numcreated += self.process(network,wells,user)
                 if chunk:
                     f.write('}\n')
         else:
@@ -168,5 +175,5 @@ class Command(BaseCommand):
                 wells = json.load(fp)
                 numwells += self.process(network,wells,user)
         
-        print numwells, 'wells processed'
+        print numwells, 'wells processed,', numcreated, 'screens added'
         
