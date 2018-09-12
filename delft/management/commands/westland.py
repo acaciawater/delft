@@ -39,6 +39,7 @@ class Command(BaseCommand):
                             'maaiveld': float(row['maaiveld mNAP']),
                             'description': row['adres'].strip(),
                             'date': datetime.datetime(1970,1,1),
+                            'straat': row['adres'].strip(),
                             'plaats': row['plaats'].strip()
                             }
                         )
