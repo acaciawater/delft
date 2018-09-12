@@ -99,4 +99,9 @@ ENV/
 *.zip
 *.sql
 *.csv
+*.ods
+*.json
 /knmi.json
+/charts2017/
+/charts/
+/charts2/
