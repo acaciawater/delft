@@ -69,7 +69,7 @@ var theMap = null;
 var markers = []; // Should be associative array: {} ??
 
 function addMarkers(map,query,zoom) {
-	$.getJSON('/locs?'+query, function(data) {
+	$.getJSON('/locs/?'+query, function(data) {
 		bounds = new L.LatLngBounds();
 		$.each(data, function(key,val) {
 			marker = L.marker([val.lat, val.lon],{title:val.name, icon: redBullet});
@@ -97,7 +97,7 @@ function addMarkers(map,query,zoom) {
 }
 
 function addMarkerGroup(map) {
-	$.getJSON('/locs', function(data) {
+	$.getJSON('/locs/', function(data) {
 		var markers = L.markerClusterGroup(); 
 		$.each(data, function(key,val) {
 			markers.addLayer(L.marker([val.lat, val.lon]));
