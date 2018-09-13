@@ -26,7 +26,7 @@ well_filters = {
 
 def filter_wells(request):    
     from django.db.models import Q
-    query = Well.objects.all()
+    query = Well.objects.order_by('name')
     term = request.GET.get('search')
     if term:
         query = query.filter(
@@ -48,6 +48,22 @@ class HomeView(DetailView):
     model = Network
     template_name = 'delft/home.html'
 
+    @staticmethod
+    def unique(propertyname,queryset):
+        ''' make unique, sorted, case insensitive list for filtering '''
+        result = set(map(lambda x:str(x[0]).lower(),queryset.order_by(propertyname).values_list(propertyname)))
+        if '' in result:
+            result.remove('')
+        return sorted(result)
+
+    @property
+    def owners(self):
+        return HomeView.unique('owner',Well.objects.exclude(owner__isnull=True))
+ 
+    @property
+    def aquifers(self):
+        return HomeView.unique('aquifer',Screen.objects.exclude(aquifer__isnull=True))
+        
     def get_context_data(self, **kwargs):
         context = DetailView.get_context_data(self, **kwargs)
         options = {
@@ -59,13 +75,7 @@ class HomeView(DetailView):
         context['search'] = self.request.GET.get('search')
         context['wells'] = filter_wells(self.request)
 
-        def filterlist(propertyname, queryset):
-            # get distinct, case insensitive, sorted list for filtering
-            filters = set(map(lambda x:str(x[0]).lower(),queryset.values_list(propertyname)))
-            try:
-                filters.remove('')
-            except:
-                pass
+        def filterlist(propertyname, entries):
             # get selected propertyname
             selected = self.request.GET.get(propertyname)
             if selected == _('all'):
@@ -74,12 +84,12 @@ class HomeView(DetailView):
     
             if selected:
                 # remove selected property from the list
-                filters.remove(selected)
+                entries.remove(selected)
     
-            return [_('all')] + sorted(filters)
+            return [_('all')] + entries
         
-        context['aquifers'] = filterlist('aquifer',Screen.objects.exclude(aquifer__isnull=True))
-        context['owners'] = filterlist('owner',Well.objects.exclude(owner__isnull=True))
+        context['aquifers'] = filterlist('aquifer',self.aquifers)
+        context['owners'] = filterlist('owner',self.owners)
         return context
 
     def get_object(self):
