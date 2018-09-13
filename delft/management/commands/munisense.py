@@ -122,7 +122,7 @@ class Command(BaseCommand):
                 if screen.mloc is None:
                     register_screen(screen)
                     if screen.mloc is None:
-                        raise 'Geen meetliocatie voor filter ' + str(screen)
+                        raise 'Geen meetlocatie voor filter ' + str(screen)
                 
 #                ds, created = screen.mloc.datasource_set.update_or_create(name=serial,defaults = {
                 ds, created = Datasource.objects.update_or_create(name=serial,meetlocatie=screen.mloc,defaults = {
