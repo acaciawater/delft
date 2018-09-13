@@ -183,7 +183,7 @@ function filterOwner(aq) {
 				{%trans "Wells"%}
 				<span id="badge" title='{% trans "Number of wells" %}' class="badge">{{wells.count}}</span>
 			</a>
-			{% for well in wells|dictsort:"name" %}
+			{% for well in wells %}
 			<a class="list-group-item" href="{% url 'meetnet:well-detail' well.id %}" onmouseover="showMarker({{well.id}});" onmouseout="hideMarker({{well.id}});">
 				<span><img class="bullet" src="{% static 'bullet_ball_blue.png' %}"></img>{{well.name}}</span>
 				{% if well.straat %}
