@@ -23,11 +23,12 @@
 <script type="text/javascript" src="/static/js/betterwms.js"></script>
 <script type="text/javascript" src="/static/js/delftmap.js"></script>
 <script type="text/javascript" src="/static/js/leaflet.wmslegend.js"></script>
+<script type="text/javascript" src="/static/js/param.js"></script>
 <script>
 
 $(function() {
 	var query = "{{request.GET.urlencode}}";
-	initMap('map',{{options|safe}},query);
+	initMap('map','list',{{options|safe}},query);
  	$("#list").height($("#map").height());
  	$("#list").sortable();
 
@@ -35,57 +36,6 @@ $(function() {
 	$('#search').value ='{{search}}';
 	{% endif %}
 });
-
-function removeParam(parameter)
-{
-	var url=document.location.href;
-	var urlparts= url.split('?');
-
-	if (urlparts.length>=2)
-	{
-		var urlBase=urlparts.shift(); 
-		var queryString=urlparts.join("?"); 
-		
-		var prefix = encodeURIComponent(parameter)+'=';
-		var pars = queryString.split(/[&;]/g);
-		for (var i= pars.length; i-->0;)               
-		    if (pars[i].lastIndexOf(prefix, 0)!==-1)   
-		        pars.splice(i, 1);
-		url = urlBase+'?'+pars.join('&');
-		window.history.pushState('',document.title,url); 
-	 }
-	 return url;
-}
-
-function insertParam(key, value)
-{
-    key = encodeURI(key); 
-    value = encodeURI(value);
-
-    var search = document.location.search;
-	if (search.length == 0)
-		return [key,value].join('=');
-    
-	var kvp = search.substr(1).split('&');
-    var i=kvp.length; 
-    while(i--) 
-    {
-        var x = kvp[i].split('=');
-
-        if (x[0]==key)
-        {
-            x[1] = value;
-            kvp[i] = x.join('=');
-            break;
-        }
-    }
-
-    if(i<0) {
-    	kvp[kvp.length] = [key,value].join('=');
-    }
-
-    return kvp.join('&'); 
-}
 
 function removeFilter(name) {
 	var url = removeParam(name);
@@ -183,17 +133,17 @@ function filterOwner(aq) {
 				{%trans "Wells"%}
 				<span id="badge" title='{% trans "Number of wells" %}' class="badge">{{wells.count}}</span>
 			</a>
-			{% for well in wells %}
-			<a class="list-group-item" href="{% url 'meetnet:well-detail' well.id %}" onmouseover="showMarker({{well.id}});" onmouseout="hideMarker({{well.id}});">
-				<span><img class="bullet" src="{% static 'bullet_ball_blue.png' %}"></img>{{well.name}}</span>
-				{% if well.straat %}
-					<br/>
-					<div class='text-muted'>
-						<small>{{well.straat}}, {{well.plaats}}</small>
-					</div>
-				{% endif %}
-			</a>
-			{% endfor %}
+<!-- 			{% for well in wells %} -->
+<!-- 			<a class="list-group-item" href="{% url 'meetnet:well-detail' well.id %}" onmouseover="showMarker({{well.id}});" onmouseout="hideMarker({{well.id}});"> -->
+<!-- 				<span><img class="bullet" src="{% static 'bullet_ball_blue.png' %}"></img>{{well.name}}</span> -->
+<!-- 				{% if well.straat %} -->
+<!-- 					<br/> -->
+<!-- 					<div class='text-muted'> -->
+<!-- 						<small>{{well.straat}}, {{well.plaats}}</small> -->
+<!-- 					</div> -->
+<!-- 				{% endif %} -->
+<!-- 			</a> -->
+<!-- 			{% endfor %} -->
 		</div>
 		{% endblock list %}
 	</div>

@@ -68,10 +68,22 @@ var redBullet = L.icon({
 var theMap = null;
 var markers = []; // Should be associative array: {} ??
 
-function addMarkers(map,query,zoom) {
+function addWellToList(well, list) {
+  var html = '<a class="list-group-item" href="/net/well/' + well.id +
+  	'" onmouseover="showMarker('+well.id+');" onmouseout="hideMarker('+well.id+');">' +
+	'<span><img class="bullet" src="static/bullet_ball_blue.png"></img>'+well.name+'</span>';
+	if (well.straat) {
+		html += '<br/><div class="text-muted"><small>'+well.straat+', '+well.plaats+'</small></div>';
+	}
+	html += '</a>';
+	list.insertAdjacentHTML('beforeend',html);
+}
+
+function addMarkers(map,list,query,zoom) {
 	$.getJSON('/locs/?'+query, function(data) {
 		bounds = new L.LatLngBounds();
 		$.each(data, function(key,val) {
+			addWellToList(val,list);
 			marker = L.marker([val.lat, val.lon],{title:val.name, icon: redBullet});
 			markers[val.id] = marker;
 			marker.bindPopup("Loading...",{maxWidth: "auto"});
@@ -219,10 +231,11 @@ function toggleLabels() {
 /**
  * Initializes leaflet map
  * @param div where map will be placed
+ * @param list where mapitems will be placed
  * @options initial centerpoint and zoomlevel
  * @returns the map
  */
-function initMap(div,options,query) {
+function initMap(div,list,options,query) {
 	var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
  		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -268,14 +281,15 @@ function initMap(div,options,query) {
 		// use default map
 		osm.addTo(map);
 	}
-	
+
+	var el = document.getElementById(list);
 	if(restoreBounds(map)) {
 		// add markers, but don't change extent
-		addMarkers(map,query,false);
+		addMarkers(map,el,query,false);
 	}
 	else {
 		// add markers and zoom to extent
-		addMarkers(map,query,true);
+		addMarkers(map,el,query,true);
 	}
 
 	var control = L.control.labelcontrol({ position: 'topleft' }).addTo(map);

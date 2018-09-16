@@ -107,7 +107,8 @@ def well_locations(request):
     for p in filter_wells(request):
         try:
             pnt = p.latlon()
-            result.append({'id': p.id, 'name': p.name, 'nitg': p.nitg, 'description': p.description, 'lon': pnt.x, 'lat': pnt.y})
+            result.append({'id': p.id, 'name': p.name, 'nitg': p.nitg, 'description': p.description, 
+                           'lon': pnt.x, 'lat': pnt.y, 'straat': p.straat, 'plaats': p.plaats})
         except Exception as e:
             return HttpResponseServerError(unicode(e))
     return JsonResponse(result,safe=False)
