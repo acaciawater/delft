@@ -34,11 +34,14 @@
 {% endblock navbar-right %}
 {% block script %}
 {{ block.super }}
+<script type="text/javascript" src="/static/js/param.js"></script>
 <script>
 function fetchSeries(name,id) {
 	var html = '<div id="screen'+id+'">Laden filter ' + name + '&hellip;</div>';
 	$("#container").append(html);
-    $.getJSON('/net/data/'+id+'?{{request.GET.urlencode}}', function (data) {
+	var query = insertParam("rule","H");
+    //$.getJSON('/net/data/'+id+'?{{request.GET.urlencode}}', function (data) {
+    $.getJSON('/net/data/'+id + '/?' + query, function (data) {
 	  	var chart = $('#container').highcharts();
 	  	$.each(data,function(key,values) {
 	  		if (values) {
