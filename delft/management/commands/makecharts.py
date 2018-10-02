@@ -13,7 +13,7 @@ from acacia.data.util import slugify
 from django.shortcuts import get_object_or_404
 
 class Command(BaseCommand):
-    help = 'maak grafiekjes voor 2017'
+    help = 'maak grafiekjes'
     def add_arguments(self, parser):
         parser.add_argument('-d', '--dest',
                 action='store',
