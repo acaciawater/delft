@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 for row in reader:
                     NITG = row['NITG']
                     try:
-                        well = Well.objects.get(Q(nitg=NITG) | Q(name=NITG))
+                        well = Well.objects.get(Q(nitg=NITG) | Q(name=NITG), owner='PZH')
                         filt = int(row['Filter'])
                         screen = well.screen_set.get(nr=filt)
                         ploc = ProjectLocatie.objects.get(name=well.nitg)
