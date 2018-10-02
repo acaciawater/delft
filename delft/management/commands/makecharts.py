@@ -53,7 +53,7 @@ class Command(BaseCommand):
                         
     def handle(self, *args, **options):
         folder = options.get('dest')
-        noscreen = options.get('noscreen')
+        noscreen = options.get('skip')
         begin = options.get('begin')
         end = options.get('end')
         tz = pytz.timezone('CET')
