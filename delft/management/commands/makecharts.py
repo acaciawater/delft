@@ -6,7 +6,7 @@ Created on Dec 6, 2014
 from django.core.management.base import BaseCommand
 from acacia.meetnet.models import Well
 from acacia.meetnet.util import chart_for_well, chart_for_screen
-from datetime import datetime
+import datetime
 import os
 import pytz
 from acacia.data.util import slugify
