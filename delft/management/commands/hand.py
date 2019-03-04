@@ -4,13 +4,14 @@ Created on Dec 6, 2014
 @author: theo
 '''
 import csv, datetime
-from optparse import make_option
-from django.core.management.base import BaseCommand
-from acacia.data.models import ProjectLocatie, MeetLocatie, ManualSeries
-from acacia.meetnet.models import Well,Screen
-from django.db.models import Q
+
 from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+from django.db.models import Q
 import pytz
+
+from acacia.data.models import ProjectLocatie, MeetLocatie, ManualSeries
+from acacia.meetnet.models import Well, Screen
 
 class Command(BaseCommand):
     args = ''
