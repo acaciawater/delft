@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         first = datetime.date(int(options.get('begin')),1,1)
-        last = datetime.date(int(options.get('end')),12,31)
+        last = datetime.date(int(options.get('end'))+1,1,1)
         df = pd.DataFrame() 
         for s in Screen.objects.order_by('well','nr'):
             print(s)
