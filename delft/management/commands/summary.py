@@ -18,7 +18,7 @@ class Command(BaseCommand):
     help = 'overzicht loggers en files'
                         
     def handle(self, *args, **options):
-        print 'name, nitg, filter, code, maaiveld, ahn3, bovenkantbuis, top, bottom, logger, ophangpunt, kabellengte, baro, aantal, monfile, monbegin, moneinde, monaantal'
+        print 'name, nitg, filter, code, maaiveld, ahn3, bovenkantbuis, top, bottom, logger, loggerstart, ophangpunt, kabellengte, baro, aantal, monfile, monbegin, moneinde, monaantal'
         for w in Well.objects.all():
             baro = w.meteo.baro if hasattr(w,'meteo') else None
             for s in w.screen_set.all():
@@ -27,4 +27,5 @@ class Command(BaseCommand):
                     #lppts = series.datapoints.filter(date__gte=lp.start, date__lte=lp.stop).count() if series else 0
                     for mf in lp.monfile_set.all():
                         mfpts = series.datapoints.filter(date__gte=mf.start_date, date__lte=mf.end_date).count() if series else 0
-                        print ','.join([str(x) for x in [w.name, w.nitg, s.nr, unicode(s), w.maaiveld, w.ahn, s.refpnt, s.top, s.bottom, lp.logger, lp.refpnt, lp.depth, q(baro), mfpts, q(mf.name), d(mf.start_date), d(mf.end_date), mf.num_points]])
+                        logger_start = lp.logger.loggerpos_set.earliest('start_date').start_date.date() if lp.logger.loggerpos_set.exists() else None
+                        print ','.join([str(x) for x in [w.name, w.nitg, s.nr, unicode(s), w.maaiveld, w.ahn, s.refpnt, s.top, s.bottom, lp.logger, logger_start, lp.refpnt, lp.depth, q(baro), mfpts, q(mf.name), d(mf.start_date), d(mf.end_date), mf.num_points]])
