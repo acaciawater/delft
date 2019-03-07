@@ -23,5 +23,7 @@ class Command(BaseCommand):
             f.write('filter,logger,start,stop,ophangpunt,kabellengte\n')
             for screen in Screen.objects.all():
                 if screen.loggerpos_set.exists(): 
-                    pos = screen.loggerpos_set.latest('start_date')
-                    f.write('{},{},{},{},{},{}\n'.format(screen, pos.logger, pos.start_date.date(),pos.end_date.date(), pos.refpnt, pos.depth))
+                    current = screen.loggerpos_set.latest('start_date')
+                    logger = current.logger
+                    first_seen = logger.loggerpos_set.earliest('start_date')
+                    f.write('{},{},{},{},{},{}\n'.format(screen, logger, first_seen.start_date.date(),current.end_date.date(), current.refpnt, current.depth))
