@@ -3,7 +3,7 @@
 	<name>delft</name>
 	<comment></comment>
 	<projects>
-		<project>acaciadata</project>
+		<project>acacia</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
