@@ -31,17 +31,19 @@ class Command(BaseCommand):
         if fname:
             with open(fname,'r') as f:
                 reader = csv.DictReader(f, delimiter=',')
+                num_read = 0
+                num_new = 0
                 for row in reader:
                     NITG = row['NITG']
                     try:
                         well = Well.objects.get(Q(nitg=NITG) | Q(name=NITG), owner='PZH')
                         filt = int(row['Filter'])
                         screen = well.screen_set.get(nr=filt)
-                        ploc = ProjectLocatie.objects.get(name=well.nitg)
-                        #ploc = ProjectLocatie.objects.get(name__in=[well.nitg, well.name])
-                        #name1= '%s/%03d' % (well.name, filt)
-                        name2= '%s/%03d' % (well.nitg, filt)
-                        mloc = ploc.meetlocatie_set.get(name=name2)
+#                         ploc = ProjectLocatie.objects.get(name=well.nitg)
+#                         #ploc = ProjectLocatie.objects.get(name__in=[well.nitg, well.name])
+#                         #name1= '%s/%03d' % (well.name, filt)
+#                         name2= '%s/%03d' % (well.nitg, filt)
+#                         mloc = ploc.meetlocatie_set.get(name=name2)
                         datumtijd = '%s %s' % (row['Datum'], row['Tijd'])
                         depth = row['Meting']
                         if depth:
@@ -54,14 +56,17 @@ class Command(BaseCommand):
                         nap = screen.refpnt - depth
                         date = datetime.datetime.strptime(datumtijd,'%d/%m/%Y %H:%M')
                         date = CET.localize(date)
-                        series_name = '%s HAND' % mloc.name
-                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=mloc,defaults={'description':'Handpeiling', 'timezone':'Etc/GMT-1', 'unit':'m NAP', 'type':'scatter', 'user':user})
+                        series_name = '%s HAND' % screen.mloc.name
+                        series,created = ManualSeries.objects.get_or_create(name=series_name,mlocatie=screen.mloc,defaults={'description':'Handpeiling', 'timezone':'Etc/GMT-1', 'unit':'m NAP', 'type':'scatter', 'user':user})
                         if row.get('Verwijderen','nee') == 'ja':
                             deleted = series.datapoints.filter(date=date).delete()
                             print screen, date, ('deleted' if deleted else 'NOT deleted')
                         else:
                             pt, created = series.datapoints.update_or_create(date=date,defaults={'value': nap})
-                            print screen, pt.date, pt.value
+                            num_read += 1
+                            if created:
+                                num_new += 1
+                            #print screen, pt.date, pt.value
                     except Well.DoesNotExist:
                         print 'Well %s not found' % NITG
                     except Screen.DoesNotExist:
@@ -70,4 +75,5 @@ class Command(BaseCommand):
                         print 'Meetlocatie %s/%03d not found' % (NITG, filt)
                     except Exception as e:
                         print e, NITG
+                print '{} points read, {} new points found'.format(num_read, num_new)
                         
