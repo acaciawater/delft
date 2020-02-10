@@ -21,6 +21,12 @@ class Command(BaseCommand):
                 default = '.',
                 help = 'destination folder')
 
+        parser.add_argument('-c', '--corrected',
+                action='store_true',
+                dest = 'corrected',
+                default = False,
+                help = 'make corrected charts')
+
         parser.add_argument('-s', '--skip',
                 action='store_true',
                 dest = 'skip',
@@ -59,6 +65,8 @@ class Command(BaseCommand):
         tz = pytz.timezone('CET')
         pk = options.get('well')
         owner=options.get('owner')
+        corrected = options.get('corrected')
+        chart_type = 'corrected' if corrected else 'normal'
         start=datetime.datetime(int(begin),1,1,tzinfo=tz) if begin else None
         stop=datetime.datetime(int(end),12,31,tzinfo=tz) if end else None
         if not os.path.exists(folder):
@@ -70,14 +78,14 @@ class Command(BaseCommand):
         #for w in Well.objects.filter(name__in=wells):
         queryset = [get_object_or_404(Well,pk=pk)] if pk else Well.objects.filter(owner=owner)
         for w in queryset:
-            data = chart_for_well(w,start=start,stop=stop)
+            data = chart_for_well(w,start=start,stop=stop,chart_type=chart_type)
             filename = os.path.join(folder,slugify(unicode(w)) + '.png')
             print filename
             with open(filename,'wb') as png:
                 png.write(data)
             if not noscreen:
                 for s in w.screen_set.all():
-                    data = chart_for_screen(s,start=start,stop=stop)
+                    data = chart_for_screen(s,start=start,stop=stop,chart_type=chart_type)
                     filename = os.path.join(folder,slugify(unicode(s)) + '.png')
                     print filename
                     with open(filename,'wb') as png:
