@@ -76,38 +76,6 @@ function filterOwner(aq) {
 {% endblock %}
 
 {% block navbar-right %}
-  <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" 
-    	data-toggle="dropdown" 
-    	href="#" 
-    	role="button" 
-    	aria-haspopup="true" 
-    	aria-expanded="false">
-    	{% if aquifer %}Aquifer {{aquifer}} {% else %} Aquifer {% endif %}
-		<b class="caret"></b>
-	</a>
-    <ul class="dropdown-menu">
-      {% for aq in aquifers %}
-      <li><a class="dropdown-item" href="" onclick='return setFilter("aquifer","{{aq}}");'>{{aq}}</a></li>
-      {% endfor %}
-    </ul>
-  </li>
-  <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" 
-    	data-toggle="dropdown" 
-    	href="#" 
-    	role="button" 
-    	aria-haspopup="true" 
-    	aria-expanded="false">
-    	{% if owner %}Gemeente {{owner}} {% else %} Gemeente {% endif %}
-		<b class="caret"></b>
-	</a>
-    <ul class="dropdown-menu">
-      {% for ow in owners %}
-      <li><a class="dropdown-item" href="" onclick='return setFilter("owner","{{ow}}");'>{{ow}}</a></li>
-      {% endfor %}
-    </ul>
-  </li>
   <li id="searchbox" class="nav-item">
 	<form class="navbar-form navbar-right" role="search">
 	<div class="input-group input-group-sm">
