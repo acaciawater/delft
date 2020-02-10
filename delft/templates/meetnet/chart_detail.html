@@ -38,7 +38,7 @@
 <script>
 function fetchSeries(name,id) {
 	var html = '<div id="screen'+id+'">Laden filter ' + name + '&hellip;</div>';
-	$("#container").append(html);
+	$("#status").append(html);
 	var query = insertParam("rule","H");
     //$.getJSON('/net/data/'+id+'?{{request.GET.urlencode}}', function (data) {
     $.getJSON('/net/data/'+id + '/?' + query, function (data) {
@@ -105,4 +105,5 @@ $(function () {
 <div class="text-center">
 <a href="{% url 'meetnet:download-well' object.id %}" class="btn btn-primary active" data-toggle="tooltip" title="Tijdreeksen van deze put downloaden als csv bestand" id="download">Downloaden</a>
 </div>
+<div id="status"></div>
 {% endblock %}
