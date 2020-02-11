@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
-from acacia.data.models import Series, ManualSeries
-import pandas as pd
+
 from acacia.meetnet.models import Screen
+import pandas as pd
+
 
 class Command(BaseCommand):
     args = ''
