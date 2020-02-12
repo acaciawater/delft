@@ -40,6 +40,8 @@ class Command(BaseCommand):
                 series = s.get_corrected_series(start=first,stop=last)
             else:
                 series = s.get_compensated_series(start=first,stop=last)
+            if series is None:
+                continue
             if series.any():
                 series = series.resample('H').nearest()
                 df[s] = series
