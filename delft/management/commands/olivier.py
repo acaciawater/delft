@@ -43,7 +43,7 @@ class Command(BaseCommand):
             if series is None:
                 continue
             if series.any():
-                series = series.resample('H').nearest()
+                series = series.resample('H').mean()
                 df[s] = series
 #         df.to_csv('olivier.csv')
         df.to_excel('olivier.xlsx','sheet1',float_format='%.3f')
