@@ -32,7 +32,8 @@ class Command(BaseCommand):
         first = datetime.datetime(int(options.get('begin')),1,1,tzinfo=tz)
         last = datetime.datetime(int(options.get('end'))+1,1,1,tzinfo=tz)
         corr = options.get('corrected')
-        df = pd.DataFrame() 
+
+        df = pd.DataFrame(index=pd.date_range(first,last,freq='H')) 
         for s in Screen.objects.order_by('well','nr'):
             print(s)
             if corr:
