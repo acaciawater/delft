@@ -7,12 +7,14 @@ from django.core.management.base import BaseCommand
 from acacia.meetnet.models import Screen
 import datetime
 import pandas as pd
+import pytz
 
 class Command(BaseCommand):
     args = ''
     help = 'maakt dump voor olivier'
                         
     def add_arguments(self, parser):
+        parser.add_argument('-c', action='store_true', dest='corrected', default=False, help='Export corrected data (default is raw)')
         parser.add_argument('-b', '--begin',
                 action='store',
                 dest = 'begin',
@@ -22,19 +24,23 @@ class Command(BaseCommand):
         parser.add_argument('-e', '--end',
                 action='store',
                 dest = 'end',
-                default = 2018,
+                default = 2019,
                 help = 'last year')
 
     def handle(self, *args, **options):
-        first = datetime.date(int(options.get('begin')),1,1)
-        last = datetime.date(int(options.get('end'))+1,1,1)
+        tz = pytz.timezone('UTC')
+        first = datetime.datetime(int(options.get('begin')),1,1,tzinfo=tz)
+        last = datetime.datetime(int(options.get('end'))+1,1,1,tzinfo=tz)
+        corr = options.get('corrected')
         df = pd.DataFrame() 
         for s in Screen.objects.order_by('well','nr'):
             print(s)
-            series = s.get_compensated_series(start=first,stop=last)
-            try:
+            if corr:
+                series = s.get_corrected_series(start=first,stop=last)
+            else:
+                series = s.get_compensated_series(start=first,stop=last)
+            if series:
                 series = series.resample('H').nearest()
                 df[s] = series
-            except:
-                pass
-        df.to_csv('olivier.csv')
+#         df.to_csv('olivier.csv')
+        df.to_excel('olivier.xlsx','sheet1',float_format='%.3f')
