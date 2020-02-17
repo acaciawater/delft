@@ -14,7 +14,11 @@ class Command(BaseCommand):
     help = 'maakt dump voor olivier'
                         
     def add_arguments(self, parser):
-        parser.add_argument('-c', action='store_true', dest='corrected', default=False, help='Export corrected data (default is raw)')
+        parser.add_argument('-c', action='store_true', 
+                dest='corrected', 
+                default=False, 
+                help='Export corrected data (default is raw)')
+
         parser.add_argument('-b', '--begin',
                 action='store',
                 dest = 'begin',
@@ -27,14 +31,25 @@ class Command(BaseCommand):
                 default = 2019,
                 help = 'last year')
 
+        parser.add_argument('-o', '--owner',
+                action='store',
+                dest = 'owner',
+                default = None,
+                help = 'select wells from comma separated list of owners')
+
     def handle(self, *args, **options):
         tz = pytz.timezone('UTC')
         first = datetime.datetime(int(options.get('begin')),1,1,tzinfo=tz)
         last = datetime.datetime(int(options.get('end'))+1,1,1,tzinfo=tz)
+        df = pd.DataFrame(index=pd.date_range(first,last,freq='H'))
         corr = options.get('corrected')
-
-        df = pd.DataFrame(index=pd.date_range(first,last,freq='H')) 
-        for s in Screen.objects.order_by('well','nr'):
+        owner = options.get('owner')
+        if owner:
+            owners = map(lambda o: o.strip(),owner.split(','))
+        queryset = Screen.objects.order_by('well','nr')
+        if owners:
+            queryset = queryset.filter(well__owner__in=owners) 
+        for s in queryset:
             print(s)
             if corr:
                 series = s.get_corrected_series(start=first,stop=last)
