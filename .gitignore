@@ -95,15 +95,7 @@ ENV/
 # Rope project settings
 .ropeproject
 
-/2016/
-*.zip
-*.sql
-*.csv
-*.ods
-*.json
-/knmi.json
-/charts2017/
-/charts/
-/charts2/
-/env/
-/env/
+/logs/
+/media/
+/export/
+/env
