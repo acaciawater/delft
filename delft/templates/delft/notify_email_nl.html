@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-style:normal;
+	font-size: 11px;
+	color:navy;
+}
+table {
+    border-collapse: collapse;
+}
+td, th {
+	text-align: left;
+	padding: 8px;
+	border: 1px solid #AAC9E7;
+}
+tr:hover {
+	background-color: #f5f5f5;
+}
+th {
+	background-color: #006080;
+	color: white;
+}
+</style>
+</head>
+<body>
+<p>Beste {{name}},</p>
+<p>
+Er is mogelijk een probleem met het gemaal.
+</p>
+<h2>Gebeurtenissen</h2>
+<table>
+<tr><th>Tijd</th><th>Bericht</th></tr>
+{% for e in events %}<tr><td>{{e.time}}</td><td>{{e.message}}</td></tr>
+{% endfor %}
+</table>
+<br>
+<br>
+Met vriendelijke groet,<br>
+Acacia Water    
+</body>
+</html>

@@ -1,0 +1,11 @@
+Beste {{name}},
+
+Er is mogelijk een probleem met het gemaal.
+
+Gebeurtenissen:
+{% for e in events %}
+{{e.time}}: {{e.message}}
+{% endfor %}
+
+Met vriendelijke groet,
+Acacia Water    
