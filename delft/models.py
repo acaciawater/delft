@@ -97,7 +97,7 @@ class Changed(InspectorBase):
 
     def check(self, data, **options):
         tol = options.get('tolerance', 0.02)
-        diff = data.diff().abs()
+        diff = data.diff()
         return diff.where(diff.abs() > tol).dropna()
     
     def message(self, time, value, result):
@@ -199,7 +199,7 @@ class Alarm(models.Model):
         html = Template(self.html_template) if self.html_template else get_template('delft/notify_email_nl.html')
         for receiver in self.receivers.filter(active=True):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
-            context = Context({'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events})
+            context = {'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events}
             email.body = text.render(context)
             email.attach_alternative(html.render(context), 'text/html')
             yield email
