@@ -251,5 +251,5 @@ def check_alarms(notify=False):
     now = timezone.now()
     for series in queryset:
         for alarm in series.alarm_set.all():
-            alarm.inspect(notify,resample='H',stop=now)
+            alarm.inspect(notify,stop=now)
             
