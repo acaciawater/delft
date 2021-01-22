@@ -225,6 +225,7 @@ class Alarm(models.Model):
         options = self.get_options(**kwargs)
         data = self.series.to_pandas(raw=True, **options)
         events = self.inspector.inspect(self, data, **options)
+        # TODO: save events?
         if events and notify:
             self.notify(events)
         return events
