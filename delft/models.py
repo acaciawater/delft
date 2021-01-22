@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from acacia.data.models import Series, classForName
 import pandas as pd
 from django.template import Template, Context
+from django.utils import timezone
 
 
 class Inspector(models.Model):
@@ -127,8 +128,8 @@ class NoData(InspectorBase):
         counts = data.resample(freq).count()
         if 'start' in options or 'stop' in options:
             # start and stop should have same timezone
-            start, stop = tz_same(pd.Timestamp(options.get('start') or data.index.min()),
-                                  pd.Timestamp(options.get('stop') or data.index.max()))
+            start, stop = tz_same(pd.Timestamp(options.get('start') or counts.index.min()),
+                                  pd.Timestamp(options.get('stop') or counts.index.max()))
             index = pd.date_range(start, stop, freq=freq)
             counts = counts.reindex(index, fill_value=0)
         return counts.where(counts == 0)
@@ -186,8 +187,10 @@ class Alarm(models.Model):
     text_template = models.TextField(null=True, blank=True, verbose_name=_('Text template'))
     html_template = models.TextField(null=True, blank=True, verbose_name=_('Html template'))
         
-    def get_options(self):
-        return json.loads(self.options or '{}')
+    def get_options(self, **kwargs):
+        options = json.loads(self.options or '{}')
+        options.update(**kwargs)
+        return options
 
     def render(self, template, context):
         if isinstance(template, Template):
@@ -218,8 +221,8 @@ class Alarm(models.Model):
         self.sent = datetime.now()
         self.save(update_fields=('sent',))
                   
-    def inspect(self, notify=False):
-        options = self.get_options()
+    def inspect(self, notify=False, **kwargs):
+        options = self.get_options(**kwargs)
         data = self.series.to_pandas(raw=True, **options)
         events = self.inspector.inspect(self, data, **options)
         if events and notify:
@@ -245,7 +248,8 @@ class Event(models.Model):
     
 def check_alarms(notify=False):
     queryset = Series.objects.annotate(alarm_count=Count('alarm')).filter(alarm_count__gt=0)
+    now = timezone.now()
     for series in queryset:
-        for alarm in series.alarm_set:
-            alarm.inspect(notify)
+        for alarm in series.alarm_set.all():
+            alarm.inspect(notify,resample='H',stop=now)
             

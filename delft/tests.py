@@ -45,13 +45,11 @@ class TestAlarm(TestCase):
         
     def testDied(self):
         data = self.series.to_pandas()
-        data[data.index > "2020-01-01 12:00:00"] = np.nan
-        data.dropna(inplace=True)
         died, _ = Series.objects.get_or_create(name='died', user=self.user, timezone='UTC')
         died.replace_data(data, clear_all=True)
         alarm, _ = Alarm.objects.get_or_create(series=died,
                              inspector=Inspector.objects.get(name='died'),
-                             options='{"start": "2020-01-01 01:00", "stop": "2020-01-02 01:00"}')
+                             options='{"start": "2020-01-01 01:00", "stop": "2020-02-01 00:00"}')
         events = alarm.inspect()
         self.assertEqual(len(events), 1)
 
