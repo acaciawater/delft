@@ -100,7 +100,7 @@ class Changed(InspectorBase):
         return diff.where(diff.abs() > tol).dropna()
     
     def message(self, time, value, result):
-        return 'Verandering van {change:+.2f} geconstateerd op {time:%c}, waarde={value:.2f}'.format(change=result, time=time, value=value)
+        return 'Verandering van {change:+.2f} geconstateerd, waarde={value:.2f}'.format(change=result, time=time, value=value)
 
 
 def tz_same(t1, t2, tz='utc'):
@@ -134,7 +134,7 @@ class NoData(InspectorBase):
         return counts.where(counts == 0)
     
     def message(self, time, value, result):
-        return 'Geen gegevens op tijdstip {:%c}'.format(time)
+        return 'Geen gegevens'
 
 
 class Died(NoData):
@@ -147,9 +147,6 @@ class Died(NoData):
         targets = counts.where(counts == size)
         diff = counts.diff()
         return targets.where(diff == 1)
-
-    def message(self, time, value, result):
-        return 'Geen gegevens sinds {:%c}'.format(time)
 
 
 class Revived(NoData):
@@ -164,7 +161,7 @@ class Revived(NoData):
         return targets.where(diff == -1)
 
     def message(self, time, value, result):
-        return 'Weer gegevens sinds {:%c}, (waarde={:.2f})'.format(time, value)
+        return 'Er zijn weer gegevens: waarde={:.2f}'.format(value)
 
 
 class Receiver(models.Model):
