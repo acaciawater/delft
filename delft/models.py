@@ -4,13 +4,12 @@ import json
 from django.core.mail.message import EmailMultiAlternatives
 from django.db import models
 from django.db.models.aggregates import Count
-from django.template.loader import render_to_string, get_template
+from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
 from acacia.data.models import Series, classForName
 import pandas as pd
-from django.template.base import Template
-from django.template.context import Context
+from django.template import Template, Context
 
 
 class Inspector(models.Model):
@@ -193,15 +192,26 @@ class Alarm(models.Model):
     def get_options(self):
         return json.loads(self.options or '{}')
 
+    def render(self, template, context):
+        if isinstance(template, Template):
+            context = Context(context)
+        return template.render(context)
+    
     def create_emails(self, events):
         ''' create emails to send to the registered receivers '''
-        text = Template(self.text_template if self.text_template else get_template('delft/notify_email_nl.txt'))
-        html = Template(self.html_template if self.html_template else get_template('delft/notify_email_nl.html'))
+        if self.text_template:
+            text = Template(self.text_template)
+        else:
+            text = get_template('delft/notify_email_nl.txt')
+        if self.html_template:
+            html = Template(self.html_template)
+        else:
+            html = get_template('delft/notify_email_nl.html')
         for receiver in self.receivers.filter(active=True):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
             context = {'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events}
-            email.body = text.render(context)
-            email.attach_alternative(html.render(context), 'text/html')
+            email.body = self.render(text,context)
+            email.attach_alternative(self.render(html, context), 'text/html')
             yield email
     
     def notify(self, events):
