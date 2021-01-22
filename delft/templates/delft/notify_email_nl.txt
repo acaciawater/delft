@@ -1,4 +1,4 @@
-Beste {{name}},
+{{salutation}},
 
 Er is mogelijk een probleem met het gemaal.
 
