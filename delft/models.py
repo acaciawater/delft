@@ -198,7 +198,7 @@ class Alarm(models.Model):
         text = Template(self.text_template) if self.text_template else get_template('delft/notify_email_nl.txt')
         html = Template(self.html_template) if self.html_template else get_template('delft/notify_email_nl.html')
         for receiver in self.receivers.filter(active=True):
-            email = EmailMultiAlternatives(subject=self.subject, to=(receiver,))
+            email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
             context = Context({'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events})
             email.body = text.render(context)
             email.attach_alternative(html.render(context), 'text/html')
