@@ -4,7 +4,7 @@ import json
 from django.core.mail.message import EmailMultiAlternatives
 from django.db import models
 from django.template import Template, Context
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from acacia.data.models import Series, classForName
@@ -211,10 +211,9 @@ class Alarm(models.Model):
     active = models.BooleanField(default=True)
 
     # email stuff    
-    subject = models.CharField(max_length=200, verbose_name=_('subject'), default='Onderwerp')
-    text_template = models.TextField(null=True, blank=True, verbose_name=_('Text template'))
-    html_template = models.TextField(null=True, blank=True, verbose_name=_('Html template'))
-        
+    subject = models.CharField(max_length=200, verbose_name=_('subject'), default=_('subject'))
+    message_text = models.TextField(null=True, blank=True, verbose_name=_('Message'))         
+
     def get_options(self, **kwargs):
         ''' return options dict, combined with supplied keyword arguments '''
         options = json.loads(self.options or '{}')
@@ -233,13 +232,17 @@ class Alarm(models.Model):
         returns generator with created emails
         '''
         
-        text = Template(self.text_template) if self.text_template else get_template('delft/notify_email_nl.txt')
-        html = Template(self.html_template) if self.html_template else get_template('delft/notify_email_nl.html')
         for receiver in self.receivers.filter(active=True):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
-            context = {'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events}
-            email.body = self.render(text, context)
-            email.attach_alternative(self.render(html, context), 'text/html')
+            context = {
+                'name': receiver.name,
+                'salutation': receiver.salutation, 
+                'text': self.message_text, 
+                'series': self.series, 
+                'events': events
+                }
+            email.body = render_to_string('delft/notify_email_nl.txt',context)
+            email.attach_alternative(render_to_string('delft/notify_email_nl.html', context), 'text/html')
             yield email
     
     def notify(self, events):

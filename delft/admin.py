@@ -14,8 +14,8 @@ class AlarmAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('series',('inspector', 'active'), 'receivers', 'options')
             }),
-        ('Email template', {
-            'fields': ('subject','text_template','html_template')
+        ('Email', {
+            'fields': ('subject','message_text')
             }), 
         )
     

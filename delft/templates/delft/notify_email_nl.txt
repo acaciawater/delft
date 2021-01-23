@@ -1,6 +1,6 @@
 {{salutation}},
 
-Er is mogelijk een probleem met het gemaal.
+{{text}}
 
 Gebeurtenissen:
 {% for e in events %}
