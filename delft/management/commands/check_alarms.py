@@ -29,8 +29,13 @@ class Command(BaseCommand):
         # select series with alarms
         queryset = Series.objects.annotate(alarm_count=Count('alarm')).filter(alarm_count__gt=0)
         logger.info('checking {} time series for alarms'.format(queryset.count()))
+        count = 0
         for series in queryset:
             for alarm in series.alarm_set.filter(active=True):
                 events = alarm.inspect(notify=notify,start=start,stop=now)
                 if events:
-                    logger.info('alarm {}: {} new events occurred.'.format(alarm,len(events)))
+                    num_events = len(events)
+                    count += num_events
+                    logger.info('alarm {}: {} new events occurred.'.format(alarm,num_events))
+        logger.info('Done. {} new events found.'.format(count))
+        
