@@ -3,18 +3,17 @@ import json
 
 from django.core.mail.message import EmailMultiAlternatives
 from django.db import models
-from django.db.models.aggregates import Count
+from django.template import Template, Context
 from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
 from acacia.data.models import Series, classForName
 import pandas as pd
-from django.template import Template, Context
-from django.utils import timezone
 
 
 class Inspector(models.Model):
-    ''' Inspector plugin
+    ''' 
+    Inspector plugin
     wrapper for inspectors that generate events for time series 
     '''
     name = models.CharField(max_length=50, verbose_name=_('naam'), unique=True)
@@ -38,7 +37,7 @@ class Inspector(models.Model):
         options = self.get_options(**kwargs)
         return inspector.inspect(data, **options)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
         
     class Meta:
@@ -96,9 +95,14 @@ class Changed(InspectorBase):
     ''' inspector that checks for value changes '''
 
     def check(self, data, **options):
+        ''' 
+        check for value changes
+        options:
+          tolerance: maximum change between two consecutive values
+        '''
         tol = options.get('tolerance', 0.02)
         diff = data.diff()
-        return diff.where(diff.abs() > tol).dropna()
+        return diff.where(diff.abs() > tol)
     
     def message(self, time, value, result):
         return 'Verandering van {change:+.2f} geconstateerd, waarde={value:.2f}'.format(change=result, time=time, value=value)
@@ -124,13 +128,20 @@ class NoData(InspectorBase):
     ''' inspector that checks for nodata '''
 
     def check(self, data, **options):
+        ''' 
+        check for nodata
+        options:
+          freq: check frequency
+          start: first time to check
+          stop: last time to check
+        '''
         freq = options.get('freq', 'H')
         counts = data.resample(freq).count()
         if 'start' in options or 'stop' in options:
             # start and stop should have same timezone
             start, stop = tz_same(pd.Timestamp(options.get('start') or counts.index.min()),
                                   pd.Timestamp(options.get('stop') or counts.index.max()))
-            index = pd.date_range(start, stop, freq=freq)
+            index = pd.date_range(start.ceil(freq), stop.ceil(freq), freq=freq)
             counts = counts.reindex(index, fill_value=0)
         return counts.where(counts == 0)
     
@@ -138,10 +149,17 @@ class NoData(InspectorBase):
         return 'Geen gegevens'
 
 
-class Died(NoData):
-
+class Offline(NoData):
+    ''' inspector that checks if there was an interruption in the data '''
+     
     def check(self, data, **options):
-        ''' died if 6 consecutive nodatas since start '''
+        ''' 
+        check for interruptions (offline)
+        options:
+          freq: resample frequency
+          start, stop: time range to check
+          size: size of window (number of consecutive nodata values) 
+        '''
         nodata = NoData.check(self, data, **options)
         size = options.get('size', 6)
         counts = nodata.rolling(size).count()
@@ -150,10 +168,17 @@ class Died(NoData):
         return targets.where(diff == 1)
 
 
-class Revived(NoData):
+class Online(NoData):
+    ''' inspector that checks if data is online again (after offline period) '''
 
     def check(self, data, **options):
-        ''' revived if data after more than 5 consecutive nodatas '''
+        ''' 
+        check if online (there is data after more than 5 consecutive nodata values)
+        options:
+          freq: resample frequency
+          start, stop: time range to check
+          size: size of window (number of consecutive nodata values)
+        '''
         nodata = NoData.check(self, data, **options)
         size = options.get('size', 6)
         counts = nodata.rolling(size).count()
@@ -166,9 +191,10 @@ class Revived(NoData):
 
 
 class Receiver(models.Model):
+    ''' Receiver receives emails about events '''
     name = models.CharField(max_length=100)
     email = models.EmailField()
-    salutation = models.CharField(max_length=100,default='Dear')
+    salutation = models.CharField(max_length=100, default='Dear')
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -182,35 +208,37 @@ class Alarm(models.Model):
     receivers = models.ManyToManyField(Receiver)
     options = models.TextField(null=True, blank=True, verbose_name=_('options'))
     sent = models.DateTimeField(null=True)
-    
+    active = models.BooleanField(default=True)
+
+    # email stuff    
     subject = models.CharField(max_length=200, verbose_name=_('subject'), default='Onderwerp')
     text_template = models.TextField(null=True, blank=True, verbose_name=_('Text template'))
     html_template = models.TextField(null=True, blank=True, verbose_name=_('Html template'))
         
     def get_options(self, **kwargs):
+        ''' return options dict, combined with supplied keyword arguments '''
         options = json.loads(self.options or '{}')
         options.update(**kwargs)
         return options
 
     def render(self, template, context):
+        ''' render string from template and context '''
         if isinstance(template, Template):
             context = Context(context)
         return template.render(context)
     
     def create_emails(self, events):
-        ''' create emails to send to the registered receivers '''
-        if self.text_template:
-            text = Template(self.text_template)
-        else:
-            text = get_template('delft/notify_email_nl.txt')
-        if self.html_template:
-            html = Template(self.html_template)
-        else:
-            html = get_template('delft/notify_email_nl.html')
+        ''' 
+        create emails to send to the registered receivers
+        returns generator with created emails
+        '''
+        
+        text = Template(self.text_template) if self.text_template else get_template('delft/notify_email_nl.txt')
+        html = Template(self.html_template) if self.html_template else get_template('delft/notify_email_nl.html')
         for receiver in self.receivers.filter(active=True):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
             context = {'name': receiver.name, 'salutation': receiver.salutation, 'series': self.series, 'events': events}
-            email.body = self.render(text,context)
+            email.body = self.render(text, context)
             email.attach_alternative(self.render(html, context), 'text/html')
             yield email
     
@@ -220,21 +248,47 @@ class Alarm(models.Model):
             email.send()
         self.sent = datetime.now()
         self.save(update_fields=('sent',))
-                  
-    def inspect(self, notify=False, **kwargs):
+
+    def filter_events(self, events):
+        ''' 
+        returns:
+          new events 
+        '''
+        existing = self.event_set.filter(time__in=[e.time for e in events])
+        
+    def save_events(self, events):
+        ''' 
+        save events to database
+        returns:
+          new events 
+        '''
+        for e in events: 
+            event, created = self.event_set.update_or_create(time=e.time, defaults={'message':e.message}) 
+            if created:
+                yield event
+
+    def inspect(self, notify=True, **kwargs):
+        ''' 
+        inspect series data, notify receivers and save events
+        returns:
+          new events 
+        '''
         options = self.get_options(**kwargs)
         data = self.series.to_pandas(raw=True, **options)
         events = self.inspector.inspect(self, data, **options)
-        # TODO: save events?
-        if events and notify:
-            self.notify(events)
+        if events:
+            events = list(self.save_events(events))
+            if notify:
+                # notify receivers (new events only)
+                self.notify(events)
         return events
     
-    def __unicode__(self):
-        return '{}:{}'.format(self.inspector, self.series)
+    def __str__(self):
+        return '{} ({})'.format(self.series, self.inspector)
 
     
 class Event(models.Model):
+    ''' time series event '''
     alarm = models.ForeignKey(Alarm)
     time = models.DateTimeField()
     message = models.TextField(null=True, blank=True)
@@ -243,14 +297,6 @@ class Event(models.Model):
         ''' notify registered receivers about this event '''
         self.alarm.notify([self])
         
-    def __unicode__(self):
+    def __str__(self):
         return str(self.alarm)
 
-    
-def check_alarms(notify=False):
-    queryset = Series.objects.annotate(alarm_count=Count('alarm')).filter(alarm_count__gt=0)
-    now = timezone.now()
-    for series in queryset:
-        for alarm in series.alarm_set.all():
-            alarm.inspect(notify,stop=now)
-            

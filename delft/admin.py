@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 
 @admin.register(Alarm)
 class AlarmAdmin(admin.ModelAdmin):
-    list_display = ('inspector', 'series', )
+    list_display = ('inspector', 'series', 'active')
     list_filter = ('inspector', 'series', 'receivers')
     search_fields = ('series', )
     filter_horizontal = ('receivers',)
@@ -12,7 +12,7 @@ class AlarmAdmin(admin.ModelAdmin):
     actions = ('inspect',)
     fieldsets = (
         (None, {
-            'fields': ('series','inspector', 'receivers', 'options')
+            'fields': ('series',('inspector', 'active'), 'receivers', 'options')
             }),
         ('Email template', {
             'fields': ('subject','text_template','html_template')
@@ -22,18 +22,14 @@ class AlarmAdmin(admin.ModelAdmin):
     def inspect(self, request, queryset):
         num_events = 0
         for alarm in queryset:
-            events = alarm.inspect(notify=True)
-            # TODO: use bulk_upsert here
-            for e in events:
-                alarm.event_set.update_or_create(time=e.time,defaults={'message':e.message})
+            events = alarm.inspect(notify=False, save=True)
             num_events += len(events)
-
         message = '{alarms} alarms processed, <a href="{url}">{events} events</a> generated'.format(
             alarms = queryset.count(), 
             url = '/admin/delft/event?alarm__id__in=[{}]'.format(','.join([str(a.id) for a in queryset])),
             events = num_events)
         messages.success(request, mark_safe(message))
-    inspect.short_description = 'Test alarm'
+    inspect.short_description = 'Test selected alarms (do not notify users)'
     
 @admin.register(Inspector)
 class InspectorAdmin(admin.ModelAdmin):
@@ -58,5 +54,4 @@ class EventAdmin(admin.ModelAdmin):
             alarm.notify(events)
 #         message = '{} emails sent'.format(queryset.count())
 #         messages.success(request, message)
-    notify.short_description = 'Send email to registered receivers'
-        
+    notify.short_description = 'Send emails to registered receivers for selected events'

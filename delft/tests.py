@@ -24,8 +24,8 @@ class TestAlarm(TestCase):
         self.series.replace_data(pd.Series(index=index, data=values))
         
         Inspector.objects.get_or_create(name='change', classname='delft.models.Changed')
-        Inspector.objects.get_or_create(name='died', classname='delft.models.Died')
-        Inspector.objects.get_or_create(name='revived', classname='delft.models.Revived')
+        Inspector.objects.get_or_create(name='offline', classname='delft.models.Offline')
+        Inspector.objects.get_or_create(name='online', classname='delft.models.Online')
         
         Receiver.objects.get_or_create(name='Theo', email='tkleinen@gmail.com')
 
@@ -48,7 +48,7 @@ class TestAlarm(TestCase):
         died, _ = Series.objects.get_or_create(name='died', user=self.user, timezone='UTC')
         died.replace_data(data, clear_all=True)
         alarm, _ = Alarm.objects.get_or_create(series=died,
-                             inspector=Inspector.objects.get(name='died'),
+                             inspector=Inspector.objects.get(name='offline'),
                              options='{"start": "2020-01-01 01:00", "stop": "2020-02-01 00:00"}')
         events = alarm.inspect()
         self.assertEqual(len(events), 1)
@@ -60,7 +60,7 @@ class TestAlarm(TestCase):
         alive, _ = Series.objects.get_or_create(name='revived', user=self.user, timezone='UTC')
         alive.replace_data(data, clear_all=True)
         alarm, _ = Alarm.objects.get_or_create(series=alive,
-                             inspector=Inspector.objects.get(name='revived'),
+                             inspector=Inspector.objects.get(name='online'),
                              options='{"start": "2020-01-01 01:00", "stop": "2020-01-02 01:00"}')
         events = alarm.inspect()
         self.assertEqual(len(events), 1)
