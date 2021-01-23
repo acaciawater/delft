@@ -252,12 +252,6 @@ class Alarm(models.Model):
         self.sent = datetime.now()
         self.save(update_fields=('sent',))
 
-    def filter_events(self, events):
-        ''' 
-        returns:
-          new events 
-        '''
-        existing = self.event_set.filter(time__in=[e.time for e in events])
         
     def save_events(self, events):
         ''' 
@@ -281,7 +275,7 @@ class Alarm(models.Model):
         events = self.inspector.inspect(self, data, **options)
         if events:
             events = list(self.save_events(events))
-            if notify:
+            if events and notify:
                 # notify receivers (new events only)
                 self.notify(events)
         return events
