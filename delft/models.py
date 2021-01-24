@@ -235,7 +235,7 @@ class Alarm(models.Model):
             # try to find well-detail url for this series
             well = Well.objects.get(name=self.series.projectlocatie().name)
             site = get_current_site(request=None)
-            well_detail = site.domain + reverse('meetnet:well-detail',args=(well.id,))
+            well_detail = 'http://' + site.domain + reverse('meetnet:well-detail',args=(well.id,))
         except Exception as e:
             well_detail = None
 
