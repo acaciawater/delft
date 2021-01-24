@@ -3,8 +3,7 @@ import json
 
 from django.core.mail.message import EmailMultiAlternatives
 from django.db import models
-from django.template import Template, Context
-from django.template.loader import get_template, render_to_string
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from acacia.data.models import Series, classForName
@@ -87,8 +86,11 @@ class InspectorBase:
         checked = checked.dropna()  
         data = data.reindex(checked.index)
         df = pd.DataFrame({'data': data, 'result': checked})
-        return [Event(alarm=self.alarm, time=time, message=self.message(time, value, result))
-                  for time, value, result in df.itertuples(index=True)]
+        return [Event(alarm=self.alarm,
+                      time=time,
+                      message=self.message(time, value, result))
+                  for time, value, result in df.itertuples(index=True)
+                ]
 
     
 class Changed(InspectorBase):
@@ -141,6 +143,7 @@ class NoData(InspectorBase):
             # start and stop should have same timezone
             start, stop = tz_same(pd.Timestamp(options.get('start') or counts.index.min()),
                                   pd.Timestamp(options.get('stop') or counts.index.max()))
+            # use Timestamp.ceil() to round time stamps to desired frequency
             index = pd.date_range(start.ceil(freq), stop.ceil(freq), freq=freq)
             counts = counts.reindex(index, fill_value=0)
         return counts.where(counts == 0)
@@ -219,12 +222,6 @@ class Alarm(models.Model):
         options = json.loads(self.options or '{}')
         options.update(**kwargs)
         return options
-
-    def render(self, template, context):
-        ''' render string from template and context '''
-        if isinstance(template, Template):
-            context = Context(context)
-        return template.render(context)
     
     def create_emails(self, events):
         ''' 
@@ -236,12 +233,12 @@ class Alarm(models.Model):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
             context = {
                 'name': receiver.name,
-                'salutation': receiver.salutation, 
-                'text': self.message_text, 
-                'series': self.series, 
+                'salutation': receiver.salutation,
+                'text': self.message_text,
+                'series': self.series,
                 'events': events
                 }
-            email.body = render_to_string('delft/notify_email_nl.txt',context)
+            email.body = render_to_string('delft/notify_email_nl.txt', context)
             email.attach_alternative(render_to_string('delft/notify_email_nl.html', context), 'text/html')
             yield email
     
@@ -251,7 +248,6 @@ class Alarm(models.Model):
             email.send()
         self.sent = datetime.now()
         self.save(update_fields=('sent',))
-
         
     def save_events(self, events):
         ''' 
