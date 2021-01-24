@@ -17,7 +17,7 @@ class Command(BaseCommand):
         )
         parser.add_argument('-s','--start',
                 dest = 'start',
-                help = 'starting time for checking alarms (default=24 hours ago)'
+                help = 'starting time for checking alarm conditions (default=24 hours ago)'
         )
     
     def handle(self, *args, **options):
@@ -28,7 +28,7 @@ class Command(BaseCommand):
             start=now-timedelta(hours=24)
         # select series with alarms
         queryset = Series.objects.annotate(alarm_count=Count('alarm')).filter(alarm_count__gt=0)
-        logger.info('checking {} time series for alarms'.format(queryset.count()))
+        logger.debug('checking {} time series for alarms'.format(queryset.count()))
         count = 0
         for series in queryset:
             for alarm in series.alarm_set.filter(active=True):
@@ -37,5 +37,5 @@ class Command(BaseCommand):
                     num_events = len(events)
                     count += num_events
                     logger.info('alarm {}: {} new events occurred.'.format(alarm,num_events))
-        logger.info('Done. {} new events found.'.format(count))
+        logger.debug('Done, {} new events.'.format(count))
         
