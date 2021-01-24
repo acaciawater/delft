@@ -85,6 +85,9 @@ class InspectorBase:
         returns:
           list of events 
         ''' 
+        if data.empty():
+            return []
+
         checked = self.check_not(data, **options) if invert else self.check(data, **options)
         checked = checked.dropna()  
         data = data.reindex(checked.index)
