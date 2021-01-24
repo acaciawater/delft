@@ -8,6 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from acacia.data.models import Series, classForName
 import pandas as pd
+from django.urls.base import reverse
+from acacia.meetnet.models import Well
+from django.contrib.sites.shortcuts import get_current_site
 
 
 class Inspector(models.Model):
@@ -228,15 +231,24 @@ class Alarm(models.Model):
         create emails to send to the registered receivers
         returns generator with created emails
         '''
-        
+        try:
+            # try to find well-detail url for this series
+            well = Well.objects.get(name=self.series.projectlocatie().name)
+            site = get_current_site(request=None)
+            well_detail = site.domain + reverse('meetnet:well-detail',args=(well.id,))
+        except Exception as e:
+            well_detail = None
+
         for receiver in self.receivers.filter(active=True):
             email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
+                
             context = {
                 'name': receiver.name,
                 'salutation': receiver.salutation,
                 'text': self.message_text,
                 'series': self.series,
-                'events': events
+                'events': events,
+                'detail': well_detail
                 }
             email.body = render_to_string('delft/notify_email_nl.txt', context)
             email.attach_alternative(render_to_string('delft/notify_email_nl.html', context), 'text/html')

@@ -7,7 +7,6 @@ body {
 	font-family:Arial, Helvetica, sans-serif;
 	font-style:normal;
 	font-size: 11px;
-	color:navy;
 }
 table {
     border-collapse: collapse;
@@ -31,13 +30,14 @@ th {
 <p>
 {{text}}
 </p>
-<h2>Gebeurtenissen</h2>
+<h3>Gebeurtenissen</h3>
 <table>
 <tr><th>Tijd</th><th>Bericht</th></tr>
 {% for e in events %}<tr><td>{{e.time}}</td><td>{{e.message}}</td></tr>
 {% endfor %}
 </table>
 <br>
+{% if detail %} <p>Klik <a href="{{detail}}">hier</a> om de details te bekijken.</p> {% endif %}
 <br>
 Met vriendelijke groet,<br>
 Acacia Water    
