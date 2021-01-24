@@ -7,5 +7,7 @@ Gebeurtenissen:
 {{e.time}}: {{e.message}}
 {% endfor %}
 
+{% if detail %} Ga naar {{detail}} om de details te bekijken. {% endif %}
+ 
 Met vriendelijke groet,
 Acacia Water    
