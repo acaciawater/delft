@@ -11,6 +11,7 @@ import pandas as pd
 from django.urls.base import reverse
 from acacia.meetnet.models import Well
 from django.contrib.sites.shortcuts import get_current_site
+from django.utils import timezone
 
 
 class Inspector(models.Model):
@@ -199,8 +200,8 @@ class Online(NoData):
         return 'Er zijn weer gegevens: waarde={:.2f}'.format(value)
 
 
-class Receiver(models.Model):
-    ''' Receiver receives emails about events '''
+class Recipient(models.Model):
+    ''' Recipient receives emails about events '''
     name = models.CharField(max_length=100)
     email = models.EmailField()
     salutation = models.CharField(max_length=100, default='Dear')
@@ -214,9 +215,8 @@ class Alarm(models.Model):
     ''' Handles alarms for time series '''
     series = models.ForeignKey(Series, on_delete=models.CASCADE)
     inspector = models.ForeignKey(Inspector, on_delete=models.CASCADE)
-    receivers = models.ManyToManyField(Receiver)
+    recipients = models.ManyToManyField(Recipient)
     options = models.TextField(null=True, blank=True, verbose_name=_('options'))
-    sent = models.DateTimeField(null=True)
     active = models.BooleanField(default=True)
 
     # email stuff    
@@ -229,41 +229,61 @@ class Alarm(models.Model):
         options.update(**kwargs)
         return options
     
+    def _create_email(self, recipient, **options):
+        ''' 
+        create email to send to the recipient
+        '''
+        email = EmailMultiAlternatives(subject=self.subject, to=(recipient.email,))
+        context = {
+            'name': recipient.name,
+            'salutation': recipient.salutation,
+            'text': self.message_text,
+            'series': self.series,
+            }
+        context.update(**options)
+        email.body = render_to_string('delft/notify_email_nl.txt', context)
+        email.html = render_to_string('delft/notify_email_nl.html', context)
+        email.attach_alternative(email.html, 'text/html')
+        return email
+    
     def create_emails(self, events):
         ''' 
-        create emails to send to the registered receivers
+        create emails to send to all registered recipients
         returns generator with created emails
         '''
+        options = {'events': events}
+
         try:
             # try to find well-detail url for this series
             well = Well.objects.get(name=self.series.projectlocatie().name)
             site = get_current_site(request=None)
-            well_detail = 'http://' + site.domain + reverse('meetnet:well-detail',args=(well.id,))
+            options.update(detail = 'http://' + site.domain + reverse('meetnet:well-detail',args=(well.id,)))
         except Exception as e:
-            well_detail = None
+            pass
 
-        for receiver in self.receivers.filter(active=True):
-            email = EmailMultiAlternatives(subject=self.subject, to=(receiver.email,))
-                
-            context = {
-                'name': receiver.name,
-                'salutation': receiver.salutation,
-                'text': self.message_text,
-                'series': self.series,
-                'events': events,
-                'detail': well_detail
-                }
-            email.body = render_to_string('delft/notify_email_nl.txt', context)
-            email.attach_alternative(render_to_string('delft/notify_email_nl.html', context), 'text/html')
-            yield email
-    
-    def notify(self, events):
-        ''' notify receivers about events '''
-        for email in self.create_emails(events):
-            email.send()
-        self.sent = datetime.now()
-        self.save(update_fields=('sent',))
+        for recipient in self.recipients.filter(active=True):
+            yield self._create_email(recipient,**options)
+
         
+    def notify(self, events):
+        ''' notify recipients about events '''
+        recipients = self.recipients.all()
+        for email in self.create_emails(events):
+#             email.send()
+            kwargs = {
+                    'subject': email.subject,
+                    'text': email.body,
+                    'html': email.html,
+                    'sent': timezone.now(),
+                }
+            for e in events:
+                message = Message.objects.create(
+                    event = e,
+                    **kwargs
+                    )
+                message.recipients.add(*recipients)
+                
+
     def save_events(self, events):
         ''' 
         save events to database
@@ -275,9 +295,10 @@ class Alarm(models.Model):
             if created:
                 yield event
 
+
     def inspect(self, notify=True, **kwargs):
         ''' 
-        inspect series data, notify receivers and save events
+        inspect series data, notify recipients and save events
         returns:
           new events 
         '''
@@ -287,7 +308,7 @@ class Alarm(models.Model):
         if events:
             events = list(self.save_events(events))
             if events and notify:
-                # notify receivers (new events only)
+                # notify recipients (new events only)
                 self.notify(events)
         return events
     
@@ -302,9 +323,17 @@ class Event(models.Model):
     message = models.TextField(null=True, blank=True)
     
     def notify(self):
-        ''' notify registered receivers about this event '''
+        ''' notify registered recipients about this event '''
         self.alarm.notify([self])
         
     def __str__(self):
         return str(self.alarm)
 
+class Message(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name='messages')
+    recipients = models.ManyToManyField(Recipient, related_name='messages')
+    subject = models.CharField(max_length=100)
+    text = models.TextField()
+    html = models.TextField(null=True, blank=True)
+    sent = models.DateTimeField(null=True)
+    

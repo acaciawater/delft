@@ -1,18 +1,17 @@
 from django.contrib import admin, messages
-from models import Alarm, Inspector, Receiver, Event
+from models import Alarm, Inspector, Recipient, Event, Message
 from django.utils.safestring import mark_safe
 
 @admin.register(Alarm)
 class AlarmAdmin(admin.ModelAdmin):
     list_display = ('inspector', 'series', 'active')
-    list_filter = ('inspector', 'series', 'receivers')
+    list_filter = ('inspector', 'series', 'recipients')
     search_fields = ('series', )
-    filter_horizontal = ('receivers',)
-    exclude = ('sent',)
+    filter_horizontal = ('recipients',)
     actions = ('inspect',)
     fieldsets = (
         (None, {
-            'fields': ('series',('inspector', 'active'), 'receivers', 'options')
+            'fields': ('series',('inspector', 'active'), 'recipients', 'options')
             }),
         ('Email', {
             'fields': ('subject','message_text')
@@ -30,16 +29,20 @@ class AlarmAdmin(admin.ModelAdmin):
             events = num_events)
         messages.success(request, mark_safe(message))
     inspect.short_description = 'Test selected alarms (do not notify users)'
-    
+
+class AlarmInline(admin.TabularInline):
+    model = Alarm.recipients.through
+        
 @admin.register(Inspector)
 class InspectorAdmin(admin.ModelAdmin):
     list_display = ('name', 'description','classname')
 
-@admin.register(Receiver)
-class ReceiverAdmin(admin.ModelAdmin):
+@admin.register(Recipient)
+class RecipientAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'active')
     list_filter = ('active',)
     search_fields = ('name',)
+    inlines = (AlarmInline,)
     
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
@@ -52,6 +55,9 @@ class EventAdmin(admin.ModelAdmin):
         for alarm in alarms:
             events = queryset.filter(alarm=alarm)
             alarm.notify(events)
-#         message = '{} emails sent'.format(queryset.count())
-#         messages.success(request, message)
-    notify.short_description = 'Send emails to registered receivers for selected events'
+    notify.short_description = 'Send emails to recipients for selected events'
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('event', 'sent')
+    list_filter = ('event__alarm', 'event__alarm__series','sent','recipients')
