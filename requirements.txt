@@ -3,7 +3,7 @@ pandas==0.21.0
 matplotlib==2.1.0
 MySQL-python==1.2.5
 netCDF4==1.2.8
-Pillow==4.3.0
+Pillow==9.0.0
 Pydap==3.2.2
 requests==2.18.4
 simplejson==3.12.0
